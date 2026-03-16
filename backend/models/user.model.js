@@ -11,10 +11,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
       validate: [validator.isEmail, "Invalid email address"],
     },
     password: {
       type: String,
+      minlength: 8,
+      select: false,
+      validate: {
+        validator: function (value) {
+          if (!this.googleId && !value) return false;
+          return true;
+        },
+        message: "Password is required unless using Google login",
+      },
     },
     role: {
       type: String,
@@ -34,6 +44,7 @@ const userSchema = new mongoose.Schema(
     },
     otpHash: {
       type: String,
+      select: false,
     },
 
     otpExpires: {
@@ -44,21 +55,41 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockoutUntil: {
+      type: Date,
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );
 
 // pre-save password
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password") || !this.password) return next();
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
-
 //compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+  if (!this.password) return false;
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 export default mongoose.model("User", userSchema);
