@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      minlength: 8,
+      minlength: 6,
       select: false,
       validate: {
         validator: function (value) {
@@ -75,16 +75,13 @@ const userSchema = new mongoose.Schema(
 );
 
 // pre-save password
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
-
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
+userSchema.pre("save", async function () {
+  if (!this.isModified("password") || !this.password) {
+    return;
   }
+
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 //compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
