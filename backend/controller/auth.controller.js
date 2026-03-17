@@ -1,11 +1,14 @@
 import React from "react";
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { generateOTP, hashOTP } from "../utils/otpHelper.js";
+import crypto from "crypto";
+
 import { sendEmail } from "../utils/emails.js";
-import { VerifyEmail } from "../utils/emailTemplate.js";
+import { VerifyEmail, ResetPasswordEmail } from "../utils/emailTemplate.js";
+
+import { generateOTP, hashOTP } from "../utils/otpHelper.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import { generateResetToken } from "../utils/resetToken.js";
 import { cookieOptions } from "../utils/cookie.js";
 
 export const register = async (req, res) => {
@@ -146,9 +149,78 @@ export const loginUser = async (req, res) => {
   }
 };
 
-export const forgotPassword = async (req, res) => {};
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-export const resetPassword = async (req, res) => {};
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    const { resetToken, hashedToken } = generateResetToken();
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    try {
+      const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+      await sendEmail(
+        email,
+        "Reset Password",
+        ResetPasswordEmail({ resetUrl }),
+      );
+
+      res.json({
+        message: "A reset link was sent to your email",
+      });
+    } catch (error) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+      throw error;
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
+    }
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    res.json({
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 export const refreshAccessToken = async (req, res) => {
   const token = req.cookies.refreshToken;
@@ -177,11 +249,23 @@ export const refreshAccessToken = async (req, res) => {
   }
 };
 
-export const logoutUser = (req, res) => {
+export const logoutUser = async (req, res) => {
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
 
   res.json({
     message: "Logged out successfully",
   });
+};
+
+export const checkAuth = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
