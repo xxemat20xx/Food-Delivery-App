@@ -1,9 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import { connectDB } from "./config/db.js";
+import { redisClient } from "./config/redis.js";
+
+// redis
+try {
+  await redisClient.connect();
+  console.log("✅ Redis connected");
+} catch (err) {
+  console.error("❌ Redis failed:", err.message);
+}
 
 // routes
 import authRoutes from "./routes/auth.routes.js";
@@ -11,8 +22,6 @@ import authRoutes from "./routes/auth.routes.js";
 // passport config
 import passport from "passport";
 import "./config/passport.js";
-
-dotenv.config();
 
 const app = express();
 

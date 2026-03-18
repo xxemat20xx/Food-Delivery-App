@@ -2,6 +2,7 @@ import React from "react";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { redisClient } from "../config/redis.js";
 
 import { sendEmail } from "../utils/emails.js";
 import { VerifyEmail, ResetPasswordEmail } from "../utils/emailTemplate.js";
@@ -24,13 +25,16 @@ export const register = async (req, res) => {
     }
 
     const otp = generateOTP();
-    const otpHash = hashOTP(otp);
+    const hashedOTP = hashOTP(otp);
+
+    await redisClient.setEx(`otp:${email}`, 600, hashedOTP);
+    await redisClient.setEx(`otpAttempts:${email}`, 600, "0");
 
     const user = await User.create({
       name,
       email,
       password,
-      otpHash,
+      hashedOTP,
       otpExpires: Date.now() + 10 * 60 * 1000,
     });
 
@@ -66,6 +70,12 @@ export const verify = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    const storedOTP = await redisClient.get(`otp:${email}`);
+
+    if (!storedOTP) {
+      return res.status(400).json({ message: "OTP Expired" });
     }
 
     if (user.otpAttempts >= 5) {

@@ -42,34 +42,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    otpHash: {
-      type: String,
-      select: false,
-    },
-
-    otpExpires: {
-      type: Date,
-    },
-
-    otpAttempts: {
-      type: Number,
-      default: 0,
-    },
-    loginAttempts: {
-      type: Number,
-      default: 0,
-    },
-    lockoutUntil: {
-      type: Date,
-    },
-    passwordResetToken: {
-      type: String,
-      select: false,
-    },
-
-    passwordResetExpires: {
-      type: Date,
-    },
   },
   { timestamps: true },
 );
