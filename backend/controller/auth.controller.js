@@ -27,7 +27,7 @@ export const register = async (req, res) => {
     const otp = generateOTP();
     const hashedOTP = hashOTP(otp);
 
-    await redisClient.setEx(`otp:${email}`, 600, hashedOTP);
+    await redisClient.setEx(`otp:${email}`, 600, hashedOTP); 
     await redisClient.setEx(`otpAttempts:${email}`, 600, "0");
 
     const user = await User.create({
@@ -68,23 +68,21 @@ export const verify = async (req, res) => {
     }
 
     const user = await User.findOne({ email }).select("+otpHash");
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get stored OTP hash from Redis
     const storedOTP = await redisClient.get(`otp:${email}`);
 
     if (!storedOTP) {
-      return res.status(400).json({ message: "OTP Expired" });
+      return res.status(400).json({ message: "OTP expired or invalid" });
     }
 
-    let attempts = parseInt(
-      (await redisClient.get(`otpAttempts:${email}`)) || "0",
-    );
-
+    // Track OTP attempts
+    let attempts = parseInt(await redisClient.get(`otpAttempts:${email}`) || "0");
     if (attempts >= 5) {
-      return res.status(429).json({ message: "Too many attempts" });
+      return res.status(429).json({ message: "Too many verification attempts. Try again later." });
     }
 
     const hashed = hashOTP(otp);
@@ -94,13 +92,15 @@ export const verify = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
+    // OTP is valid - verify user
     user.isVerified = true;
     await user.save();
 
+    // Clear OTP and attempts from Redis
     await redisClient.del(`otp:${email}`);
     await redisClient.del(`otpAttempts:${email}`);
 
-    res.json({ message: "Email verified" });
+    res.json({ message: "Email verified successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -109,20 +109,6 @@ export const verify = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const key = `login:${req.ip}`;
-
-    let attempts = await redisClient.incr(key);
-
-    if (attempts === 1) {
-      await redisClient.expire(key, 60);
-    }
-
-    if (attempts > 5) {
-      return res.status(429).json({
-        message: "Too many attempts. Try later.",
-      });
-    }
 
     const user = await User.findOne({ email }).select("+password");
 
@@ -141,8 +127,6 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
-    await redisClient.del(key);
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -170,37 +154,53 @@ export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    // ✅ Cooldown check
+    const cooldownKey = `forgot:cooldown:${email}:${req.ip}`;
+    const cooldown = await redisClient.ttl(cooldownKey);
 
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
+    if (cooldown > 0) {
+      return res.status(429).json({
+        message: `Please wait ${cooldown}s before requesting again`,
+      });
     }
 
-    // Generate reset token and hashed version
+    const user = await User.findOne({ email });
+
+    // ✅ Prevent email enumeration
+    if (!user) {
+      return res.json({
+        message: "If this email exists, a reset link was sent",
+      });
+    }
+
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashed = crypto.createHash("sha256").update(resetToken).digest("hex");
 
-    // Save hashed token in Redis for 10 minutes
-    await redisClient.setEx(`reset:${email}`, 600, hashed);
+    // ✅ Only one active token
+    await redisClient.set(`reset:${email}`, hashed, { EX: 600 });
 
     try {
       const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-      // Send email (assuming ResetPasswordEmail)
       await sendEmail(
         email,
         "Reset Password",
         ResetPasswordEmail({ resetUrl }),
       );
 
-      res.json({ message: "A reset link was sent to your email" });
+      // ✅ Set cooldown AFTER success
+      await redisClient.setEx(cooldownKey, 30, "1");
+
+      res.json({
+        message: "A reset link was sent to your email",
+      });
     } catch (emailError) {
-      // Delete Redis token if email fails
       await redisClient.del(`reset:${email}`);
       console.error("Failed to send reset email:", emailError);
-      res
-        .status(500)
-        .json({ message: "Failed to send reset email. Please try again." });
+
+      res.status(500).json({
+        message: "Failed to send reset email. Please try again.",
+      });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
