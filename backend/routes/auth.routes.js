@@ -60,10 +60,11 @@ const authRoutes = express.Router();
 authRoutes.post("/register",registerLimiter, register);
 authRoutes.post("/verify",verifyLimiter, verify);
 authRoutes.post("/login", loginLimiter, loginUser);
+authRoutes.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
+
+authRoutes.post("/reset-password/:token", resetPassword);
 authRoutes.post("/logout", logoutUser);
 authRoutes.post("/refresh", refreshAccessToken);
-authRoutes.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
-authRoutes.post("/reset-password/:token", resetPassword);
 
 // protected routes
 authRoutes.get("/me", verifyToken, checkAuth);
