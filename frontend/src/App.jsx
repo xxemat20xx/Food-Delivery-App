@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
+//components
+import Navbar from './components/Navbar';
+
 // protect
 import ProtectedRoutes from './components/ProtectedRoutes';
 
@@ -30,12 +33,14 @@ const App = () => {
           </ProtectedRoutes>
         }
       />
-      
+
       <Route 
       path="/dashboard"
       element={
         <ProtectedRoutes>
-           <h1>Dashboard</h1>
+           <Navbar>
+            <h1 className='my-8 p-6'>Dashboard</h1>
+           </Navbar>
         </ProtectedRoutes>
       }
       />
