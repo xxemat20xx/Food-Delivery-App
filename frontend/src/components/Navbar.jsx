@@ -40,7 +40,6 @@ const Navbar = ({ children }) => {
           {/* Logo */}
           <div
             className="flex items-center text-lg font-semibold text-white tracking-wide cursor-pointer"
-            id="home"
           >
             <img src={Logo} alt="Logo" className="h-10 w-auto" />
             <span className="ml-3 text-sm md:text-lg font-semibold text-white tracking-wide">

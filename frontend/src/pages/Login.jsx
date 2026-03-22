@@ -8,8 +8,10 @@ import {
   InputAdornment,
   IconButton,
   Box,
+  CircularProgress,
+  Fade,
 } from "@mui/material";
-import { Mail, Lock, X } from "lucide-react";
+import { Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -17,66 +19,96 @@ const LoginModal = ({ open, onClose }) => {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const { login } = useAuthStore();
 
-  // ✅ Input styling (FIXED placement)
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       color: "#e5e7eb",
       background: "rgba(255,255,255,0.03)",
       backdropFilter: "blur(6px)",
       borderRadius: "10px",
-
-      "& fieldset": {
-        borderColor: "rgba(255,255,255,0.1)",
-      },
-
-      "&:hover fieldset": {
-        borderColor: "#f59e0b",
-      },
-
+      "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+      "&:hover fieldset": { borderColor: "#f59e0b" },
       "&.Mui-focused fieldset": {
         borderColor: "#f59e0b",
         boxShadow: "0 0 0 1px #f59e0b33",
       },
     },
-
-    "& .MuiInputLabel-root": {
-      color: "#9ca3af",
-    },
-
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "#f59e0b",
-    },
+    "& .MuiInputLabel-root": { color: "#9ca3af" },
+    "& .MuiInputLabel-root.Mui-focused": { color: "#f59e0b" },
   };
 
   const resetFields = () => {
     setEmail("");
     setPassword("");
+    setErrors({});
+  };
+  const closeModal = () => {
+    resetFields();
+    setMode("login");
+    onClose();
+  };
+  const validate = () => {
+    let err = {};
+
+    if (!email.includes("@")) err.email = "Invalid email";
+    if (mode !== "forgot" && password.length < 6)
+      err.password = "Minimum 6 characters";
+
+    setErrors(err);
+    return Object.keys(err).length === 0;
   };
 
-  const handleLogin = (e) => {
+  const fakeDelay = () => new Promise((res) => setTimeout(res, 1000));
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+    await fakeDelay();
+
     const success = login({ email, password });
+
+    setLoading(false);
 
     if (success) {
       resetFields();
       setMode("login");
       onClose();
+    } else {
+      setErrors({ password: "Invalid credentials" });
     }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+    await fakeDelay();
+
     console.log("Signup:", { email, password });
+
+    setLoading(false);
     resetFields();
     setMode("login");
   };
 
-  const handleForgot = (e) => {
+  const handleForgot = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+    await fakeDelay();
+
     console.log("Reset link sent:", email);
+
+    setLoading(false);
     resetFields();
     setMode("login");
   };
@@ -105,19 +137,15 @@ const LoginModal = ({ open, onClose }) => {
     >
       <DialogContent sx={{ p: 4, position: "relative", color: "#e5e7eb" }}>
         
-        {/* Close Button */}
+        {/* Close */}
         <IconButton
-          onClick={onClose}
+          onClick={closeModal}
           sx={{
             position: "absolute",
             top: 10,
             right: 10,
             color: "#9ca3af",
-            transition: "0.2s",
-            "&:hover": {
-              color: "#f59e0b",
-              transform: "rotate(90deg)",
-            },
+            "&:hover": { color: "#f59e0b", transform: "rotate(90deg)" },
           }}
         >
           <X size={20} />
@@ -133,23 +161,31 @@ const LoginModal = ({ open, onClose }) => {
             background: "linear-gradient(90deg, #f59e0b, #fbbf24)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            letterSpacing: 0.5,
           }}
         >
           {getTitle()}
         </Typography>
 
-        {/* LOGIN */}
-        {mode === "login" && (
-          <Box component="form" onSubmit={handleLogin}>
+        <Fade in timeout={300} key={mode}>
+          <Box
+            component="form"
+            onSubmit={
+              mode === "login"
+                ? handleLogin
+                : mode === "signup"
+                ? handleSignup
+                : handleForgot
+            }
+          >
+            {/* Email */}
             <TextField
               label="Email"
-              type="email"
+              fullWidth
+              margin="normal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              margin="normal"
-              fullWidth
-              required
+              error={!!errors.email}
+              helperText={errors.email}
               sx={inputStyle}
               InputProps={{
                 startAdornment: (
@@ -160,27 +196,44 @@ const LoginModal = ({ open, onClose }) => {
               }}
             />
 
-            <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              margin="normal"
-              fullWidth
-              required
-              sx={inputStyle}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock size={18} color="#9ca3af" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            {/* Password (not in forgot) */}
+            {mode !== "forgot" && (
+              <TextField
+                label="Password"
+                type={showPass ? "text" : "password"}
+                fullWidth
+                margin="normal"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={!!errors.password}
+                helperText={errors.password}
+                sx={inputStyle}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock size={18} color="#9ca3af" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPass(!showPass)}
+                        edge="end"
+                        sx={{ color: "#9ca3af" }}
+                      >
+                        {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
 
+            {/* Button */}
             <Button
               type="submit"
               fullWidth
+              disabled={loading}
               sx={{
                 mt: 3,
                 py: 1.3,
@@ -189,98 +242,23 @@ const LoginModal = ({ open, onClose }) => {
                 background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
                 color: "#1f2937",
                 boxShadow: "0 4px 20px rgba(245,158,11,0.35)",
-                transition: "all 0.25s ease",
-                "&:hover": {
-                  transform: "translateY(-1px) scale(1.01)",
-                  boxShadow: "0 6px 25px rgba(245,158,11,0.5)",
-                  background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                },
+                "&:hover": { transform: "translateY(-1px)" },
               }}
             >
-              Sign In
+              {loading ? (
+                <CircularProgress size={22} sx={{ color: "#1f2937" }} />
+              ) : mode === "login" ? (
+                "Sign In"
+              ) : mode === "signup" ? (
+                "Create Account"
+              ) : (
+                "Send Reset Link"
+              )}
             </Button>
           </Box>
-        )}
+        </Fade>
 
-        {/* SIGNUP */}
-        {mode === "signup" && (
-          <Box component="form" onSubmit={handleSignup}>
-            <TextField
-              label="Email"
-              fullWidth
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              sx={inputStyle}
-            />
-
-            <TextField
-              label="Password"
-              type="password"
-              fullWidth
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              sx={inputStyle}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              sx={{
-                mt: 3,
-                py: 1.3,
-                fontWeight: 700,
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-                color: "#1f2937",
-                boxShadow: "0 4px 20px rgba(245,158,11,0.35)",
-                "&:hover": {
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 6px 25px rgba(245,158,11,0.5)",
-                },
-              }}
-            >
-              Create Account
-            </Button>
-          </Box>
-        )}
-
-        {/* FORGOT */}
-        {mode === "forgot" && (
-          <Box component="form" onSubmit={handleForgot}>
-            <TextField
-              label="Email"
-              fullWidth
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              sx={inputStyle}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              sx={{
-                mt: 3,
-                py: 1.3,
-                fontWeight: 700,
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-                color: "#1f2937",
-                boxShadow: "0 4px 20px rgba(245,158,11,0.35)",
-                "&:hover": {
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 6px 25px rgba(245,158,11,0.5)",
-                },
-              }}
-            >
-              Send Reset Link
-            </Button>
-          </Box>
-        )}
-
-        {/* LINKS */}
+        {/* Links */}
         <Typography
           variant="body2"
           sx={{ mt: 3, textAlign: "center", color: "#9ca3af" }}
