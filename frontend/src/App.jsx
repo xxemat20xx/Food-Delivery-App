@@ -9,9 +9,11 @@ import ProtectedRoutes from './components/ProtectedRoutes';
 
 // pages
 import Login from './pages/Login';
+import Homepage from './pages/Homepage';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
+
 
 const App = () => {
   const { checkAuth } = useAuthStore()
@@ -39,7 +41,7 @@ const App = () => {
       element={
         <ProtectedRoutes>
            <Navbar>
-            <h1 className='my-8 p-6'>Dashboard</h1>
+            <Homepage />
            </Navbar>
         </ProtectedRoutes>
       }
