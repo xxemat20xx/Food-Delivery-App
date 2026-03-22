@@ -23,30 +23,24 @@ const App = () => {
 
   return (
    <Routes>
-     
+      <Route 
+      path="/"
+      element={
+           <Navbar>
+            <Homepage />
+           </Navbar>
+      }
+      />
       <Route path="/login" element={<Login />} />
-
-
+      
       <Route
-        path="/"
+        path="/homepage"
         element={
           <ProtectedRoutes>
             <h1>Home</h1>
           </ProtectedRoutes>
         }
       />
-
-      <Route 
-      path="/dashboard"
-      element={
-        <ProtectedRoutes>
-           <Navbar>
-            <Homepage />
-           </Navbar>
-        </ProtectedRoutes>
-      }
-      />
-
    </Routes>
   )
 }

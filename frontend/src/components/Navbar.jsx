@@ -1,14 +1,17 @@
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X, LogOut, Shield } from "lucide-react";
+import { Menu, X, LogOut, Shield, LogIn } from "lucide-react";
 
 import Logo from "../assets/inarawan-logo.png";
+
+import LoginModal from "../pages/Login";
 
 const Navbar = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { logout } = useAuthStore();
+  // ✅ Get user state
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const navItems = [
@@ -17,9 +20,16 @@ const Navbar = ({ children }) => {
     { name: "Contact", targetId: "contact" },
   ];
 
+  const [loginOpen, setLoginOpen] = useState(false);
+
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  // ✅ Empty login handler
+  const handleLogin = () => {
+     setLoginOpen(true);
   };
 
   return (
@@ -28,11 +38,14 @@ const Navbar = ({ children }) => {
         <div className="flex items-center justify-between px-6 py-3 sm:px-12">
           
           {/* Logo */}
-          <div className="flex items-center text-lg font-semibold text-white tracking-wide cursor-pointer" id="home">
-            <div>
-                <img src={Logo} alt="Logo" className="h-10 w-auto" />
-            </div>
-            <span className="ml-3 text-sm md:text-lg font-semibold text-white tracking-wide">Inarawan Coffee</span>
+          <div
+            className="flex items-center text-lg font-semibold text-white tracking-wide cursor-pointer"
+            id="home"
+          >
+            <img src={Logo} alt="Logo" className="h-10 w-auto" />
+            <span className="ml-3 text-sm md:text-lg font-semibold text-white tracking-wide">
+              Inarawan Coffee
+            </span>
           </div>
 
           {/* Desktop Menu */}
@@ -46,20 +59,33 @@ const Navbar = ({ children }) => {
                 {item.name}
               </a>
             ))}
+{/* 
             <button
               onClick={() => navigate("/dashboard")}
               className="flex items-center text-white gap-2"
             >
               <Shield size={18} />
               Admin Portal
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+            </button> */}
+
+            {/* ✅ Conditional Auth Button */}
+            {!user ? (
+              <button
+                onClick={handleLogin}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition"
+              >
+                <LogIn size={18} />
+                Login
+              </button>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -88,27 +114,41 @@ const Navbar = ({ children }) => {
                 {item.name}
               </a>
             ))}
-            <button
+
+            {/* <button
               onClick={() => navigate("/dashboard")}
               className="flex items-center text-white gap-2"
             >
+              <Shield size={18} />
               Admin Portal
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition w-fit"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
+            </button> */}
+
+            {/* ✅ Conditional Auth Button (Mobile) */}
+            {!user ? (
+              <button
+                onClick={handleLogin}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition w-fit"
+              >
+                <LogIn size={18} />
+                Login
+              </button>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition w-fit"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Better spacing approach */}
       <main className="p-12 mt-12 md:mt-16 bg-black text-slate-100 min-h-screen">
         {children}
       </main>
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 };
