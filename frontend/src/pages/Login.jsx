@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,23 +7,28 @@ import {
   Typography,
   InputAdornment,
   IconButton,
-  Box,
   CircularProgress,
+  Box,
   Fade,
 } from "@mui/material";
 import { Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const LoginModal = ({ open, onClose }) => {
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState("login"); // login | signup | forgot | verify
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [otp, setOtp] = useState("");
 
-  const { login } = useAuthStore();
+  const [showPass, setShowPass] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [cooldown, setCooldown] = useState(0);
+
+  const navigate = useNavigate();
+
+  const { login, register, forgotPassword, verifyEmail, isLoading  } = useAuthStore();
 
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
@@ -42,87 +47,111 @@ const LoginModal = ({ open, onClose }) => {
     "& .MuiInputLabel-root.Mui-focused": { color: "#f59e0b" },
   };
 
+  // 🔁 cooldown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
   const resetFields = () => {
     setEmail("");
     setPassword("");
+    setOtp("");
     setErrors({});
   };
+
   const closeModal = () => {
     resetFields();
     setMode("login");
     onClose();
   };
+
   const validate = () => {
     let err = {};
 
     if (!email.includes("@")) err.email = "Invalid email";
-    if (mode !== "forgot" && password.length < 6)
+    if (mode !== "forgot" && mode !== "verify" && password.length < 6)
       err.password = "Minimum 6 characters";
+
+    if (mode === "verify" && otp.length < 4)
+      err.otp = "Invalid OTP";
 
     setErrors(err);
     return Object.keys(err).length === 0;
   };
 
-  const fakeDelay = () => new Promise((res) => setTimeout(res, 1000));
-
+  // ✅ LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    setLoading(true);
-    await fakeDelay();
+    const res = await login({ email, password });
 
-    const success = login({ email, password });
-
-    setLoading(false);
-
-    if (success) {
-      resetFields();
-      setMode("login");
-      onClose();
-    } else {
-      setErrors({ password: "Invalid credentials" });
+    if (res !== undefined) {
+      closeModal();
+      navigate("/");
     }
   };
 
+  // ✅ SIGNUP → SWITCH TO OTP MODE
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    setLoading(true);
-    await fakeDelay();
+    const res = await register({ email, password });
 
-    console.log("Signup:", { email, password });
-
-    setLoading(false);
-    resetFields();
-    setMode("login");
+    if (res) {
+      setMode("verify"); // 🔥 go to OTP screen
+    }
   };
 
+  // ✅ VERIFY OTP
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const res = await verifyEmail({ email, otp });
+
+    if (res) {
+      setMode("login");
+      setOtp("");
+    }
+  };
+
+  // ✅ RESEND OTP (reuse forgotPassword or make separate endpoint)
+  const handleResendOTP = async () => {
+    if (cooldown > 0) return;
+
+    await forgotPassword({ email }); // you can replace with resend OTP API
+    setCooldown(30);
+  };
+
+  // ✅ FORGOT PASSWORD
   const handleForgot = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    setLoading(true);
-    await fakeDelay();
+    const res = await forgotPassword({ email });
 
-    console.log("Reset link sent:", email);
-
-    setLoading(false);
-    resetFields();
-    setMode("login");
+    if (res) {
+      setMode("login");
+    }
   };
 
   const getTitle = () => {
     if (mode === "signup") return "Create Account";
     if (mode === "forgot") return "Reset Password";
+    if (mode === "verify") return "Verify Account";
     return "Welcome Back";
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={closeModal}
       maxWidth="xs"
       fullWidth
       PaperProps={{
@@ -174,6 +203,8 @@ const LoginModal = ({ open, onClose }) => {
                 ? handleLogin
                 : mode === "signup"
                 ? handleSignup
+                : mode === "verify"
+                ? handleVerify
                 : handleForgot
             }
           >
@@ -183,6 +214,7 @@ const LoginModal = ({ open, onClose }) => {
               fullWidth
               margin="normal"
               value={email}
+              disabled={mode === "verify"}
               onChange={(e) => setEmail(e.target.value)}
               error={!!errors.email}
               helperText={errors.email}
@@ -196,8 +228,8 @@ const LoginModal = ({ open, onClose }) => {
               }}
             />
 
-            {/* Password (not in forgot) */}
-            {mode !== "forgot" && (
+            {/* Password */}
+            {mode === "login" || mode === "signup" ? (
               <TextField
                 label="Password"
                 type={showPass ? "text" : "password"}
@@ -227,13 +259,35 @@ const LoginModal = ({ open, onClose }) => {
                   ),
                 }}
               />
+            ) : null}
+
+            {/* OTP */}
+            {mode === "verify" && (
+              <TextField
+                label="Enter OTP"
+                fullWidth
+                margin="normal"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                error={!!errors.otp}
+                helperText={errors.otp}
+                inputProps={{
+                  maxLength: 6,
+                  style: {
+                    textAlign: "center",
+                    letterSpacing: "10px",
+                    fontSize: "20px",
+                  },
+                }}
+                sx={inputStyle}
+              />
             )}
 
             {/* Button */}
             <Button
               type="submit"
               fullWidth
-              disabled={loading}
+              disabled={isLoading}
               sx={{
                 mt: 3,
                 py: 1.3,
@@ -241,20 +295,35 @@ const LoginModal = ({ open, onClose }) => {
                 borderRadius: "10px",
                 background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
                 color: "#1f2937",
-                boxShadow: "0 4px 20px rgba(245,158,11,0.35)",
-                "&:hover": { transform: "translateY(-1px)" },
+                position: "relative",
               }}
             >
-              {loading ? (
+              {isLoading ? (
                 <CircularProgress size={22} sx={{ color: "#1f2937" }} />
               ) : mode === "login" ? (
                 "Sign In"
               ) : mode === "signup" ? (
                 "Create Account"
+              ) : mode === "verify" ? (
+                "Verify OTP"
               ) : (
                 "Send Reset Link"
               )}
             </Button>
+
+            {/* RESEND OTP */}
+            {mode === "verify" && (
+              <Typography
+                mt={2}
+                textAlign="center"
+                sx={{ color: "#9ca3af", cursor: "pointer" }}
+                onClick={handleResendOTP}
+              >
+                {cooldown > 0
+                  ? `Resend OTP in ${cooldown}s`
+                  : "Resend OTP"}
+              </Typography>
+            )}
           </Box>
         </Fade>
 

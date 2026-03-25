@@ -58,14 +58,16 @@ const Navbar = ({ children }) => {
                 {item.name}
               </a>
             ))}
-{/* 
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="flex items-center text-white gap-2"
-            >
-              <Shield size={18} />
-              Admin Portal
-            </button> */}
+
+            {(user?.role === "admin" || user?.role === "staff") && (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="flex items-center text-white gap-2"
+              >
+                <Shield size={18} />
+                Admin Portal
+              </button>
+            )}
 
             {/* ✅ Conditional Auth Button */}
             {!user ? (

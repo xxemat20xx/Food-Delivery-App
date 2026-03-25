@@ -10,9 +10,13 @@ import ProtectedRoutes from './components/ProtectedRoutes';
 // pages
 import Login from './pages/Login';
 import Homepage from './pages/Homepage';
+import AdminDashboard from './pages/AdminDashboard';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
+
+// toaster
+import { ToastContainer, Bounce } from 'react-toastify';
 
 
 const App = () => {
@@ -22,7 +26,21 @@ const App = () => {
   },[checkAuth])
 
   return (
-   <Routes>
+    <>
+      <ToastContainer
+      position="bottom-right"
+      autoClose={1500}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+      transition={Bounce}
+      />
+    <Routes>
       <Route 
       path="/"
       element={
@@ -34,14 +52,16 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       
       <Route
-        path="/homepage"
+        path="/dashboard"
         element={
           <ProtectedRoutes>
-            <h1>Home</h1>
+            <AdminDashboard />
           </ProtectedRoutes>
         }
       />
    </Routes>
+    </>
+   
   )
 }
 
