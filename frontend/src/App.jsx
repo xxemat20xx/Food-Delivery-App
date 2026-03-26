@@ -11,6 +11,8 @@ import ProtectedRoutes from './components/ProtectedRoutes';
 import Login from './pages/Login';
 import Homepage from './pages/Homepage';
 import AdminDashboard from './pages/AdminDashboard';
+import StoreFinder from './components/StoreFinder';
+import MenuPage from './pages/MenuPage';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
@@ -41,7 +43,8 @@ const App = () => {
       transition={Bounce}
       />
     <Routes>
-      <Route 
+      <Route path="/login" element={<Login />} />
+            <Route 
       path="/"
       element={
            <Navbar>
@@ -49,8 +52,22 @@ const App = () => {
            </Navbar>
       }
       />
-      <Route path="/login" element={<Login />} />
-      
+            <Route
+        path="/menu"
+        element={
+          <Navbar>
+            <MenuPage />
+          </Navbar>
+        }
+      />
+      <Route
+        path="/stores"
+        element={
+          <Navbar>
+            <StoreFinder />
+          </Navbar>
+        }
+      />
       <Route
         path="/dashboard"
         element={
@@ -59,7 +76,9 @@ const App = () => {
           </ProtectedRoutes>
         }
       />
+
    </Routes>
+
     </>
    
   )

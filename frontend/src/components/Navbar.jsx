@@ -1,7 +1,7 @@
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X, LogOut, Shield, LogIn } from "lucide-react";
+import { Menu, X, LogOut, Shield, LogIn, MapPin } from "lucide-react";
 
 import Logo from "../assets/inarawan-logo.png";
 
@@ -15,9 +15,9 @@ const Navbar = ({ children }) => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "Menu", targetId: "menu" },
-    { name: "About", targetId: "about" },
-    { name: "Contact", targetId: "contact" },
+    { name: "Menu", path: "/menu" },
+    { name: "About", path: "/#about" },
+    { name: "Contact", path: "/#contact" },
   ];
 
   const [loginOpen, setLoginOpen] = useState(false);
@@ -40,6 +40,7 @@ const Navbar = ({ children }) => {
           {/* Logo */}
           <div
             className="flex items-center text-lg font-semibold text-white tracking-wide cursor-pointer"
+            onClick={() => navigate("/")}
           >
             <img src={Logo} alt="Logo" className="h-10 w-auto" />
             <span className="ml-3 text-sm md:text-lg font-semibold text-white tracking-wide">
@@ -49,14 +50,18 @@ const Navbar = ({ children }) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
+            <button className="text-white/70 hover:text-white transition duration-200 flex items-center gap-2"
+            onClick={() => navigate("/stores")}>
+              <MapPin /> Find Store
+            </button>
             {navItems.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={`#${item.targetId}`}
+                onClick={() => navigate(item.path)}
                 className="text-white/70 hover:text-white transition duration-200"
               >
                 {item.name}
-              </a>
+              </button>
             ))}
 
             {(user?.role === "admin" || user?.role === "staff") && (
