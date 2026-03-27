@@ -18,6 +18,7 @@ try {
 
 // routes
 import authRoutes from "./routes/auth.routes.js";
+import storeRoutes from "./routes/store.routes.js";
 
 // passport config
 import passport from "passport";
@@ -44,7 +45,7 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/stores", storeRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
