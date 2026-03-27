@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { getDistance } from "../utils/distance";
 import { useNavigate } from "react-router-dom";
 import { useStoreStore } from "../store/useStoreStore";
-import { MapPin, Navigation, Star, Clock, Phone, ChevronRight, Mail } from "lucide-react";
+import { MapPin, Navigation, Star, Clock, Phone, ChevronRight } from "lucide-react";
 
 const StoreFinder = () => {
   const { stores, fetchStores, loading } = useStoreStore();
@@ -18,23 +18,6 @@ const StoreFinder = () => {
     fetchStores();
   }, [fetchStores]);
 
-  // Helper to get lat/lng from store (handles both new location and old lat/lng)
-  const getStoreLatLng = (store) => {
-    if (store.location && store.location.coordinates) {
-      return { lat: store.location.coordinates[1], lng: store.location.coordinates[0] };
-    }
-    return { lat: store.lat, lng: store.lng };
-  };
-
-  // Format hours for display (simplified: shows Monday hours as example)
-  const formatHours = (hours) => {
-    if (!hours) return null;
-    if (hours.monday) {
-      return `${hours.monday.open} - ${hours.monday.close}`;
-    }
-    return null;
-  };
-
   const handleFind = () => {
     setLocationLoading(true);
     setLocationError(null);
@@ -49,11 +32,10 @@ const StoreFinder = () => {
       (pos) => {
         const { latitude, longitude } = pos.coords;
 
-        const computed = stores.map((store) => {
-          const { lat, lng } = getStoreLatLng(store);
-          const distance = getDistance(latitude, longitude, lat, lng);
-          return { ...store, distance };
-        });
+        const computed = stores.map((store) => ({
+          ...store,
+          distance: getDistance(latitude, longitude, store.lat, store.lng),
+        }));
 
         computed.sort((a, b) => a.distance - b.distance);
 
@@ -137,90 +119,68 @@ const StoreFinder = () => {
                 Stores near you
               </h2>
               <div className="space-y-3">
-                {results.map((store, index) => {
-                  const hoursStr = formatHours(store.hours);
-                  return (
-                    <div
-                      key={store._id}
-                      onClick={() => setSelectedStore(store)}
-                      className={`group relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                        selectedStore?._id === store._id
-                          ? "border-orange-500 bg-gray-800 shadow-lg"
-                          : "border-gray-800 bg-gray-900 hover:border-gray-700 hover:shadow-md"
-                      }`}
-                    >
-                      {/* Badge for nearest store */}
-                      {index === 0 && (
-                        <div className="absolute top-3 right-3 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current" />
-                          Nearest
-                        </div>
-                      )}
+                {results.map((store, index) => (
+                  <div
+                    key={store._id}
+                    onClick={() => setSelectedStore(store)}
+                    className={`group relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                      selectedStore?._id === store._id
+                        ? "border-orange-500 bg-gray-800 shadow-lg"
+                        : "border-gray-800 bg-gray-900 hover:border-gray-700 hover:shadow-md"
+                    }`}
+                  >
+                    {/* Badge for nearest store */}
+                    {index === 0 && (
+                      <div className="absolute top-3 right-3 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-current" />
+                        Nearest
+                      </div>
+                    )}
 
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white">
-                            {store.name}
-                          </h3>
-                          <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                            <MapPin className="h-4 w-4 flex-shrink-0" />
-                            {store.address}
-                          </p>
-                          {/* Additional store details */}
-                          <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-500">
-                            {store.distance && (
-                              <span className="flex items-center gap-1">
-                                <Navigation className="h-4 w-4" />
-                                {formatDistance(store.distance)}
-                              </span>
-                            )}
-                            {store.phone && (
-                              <a
-                                href={`tel:${store.phone}`}
-                                className="flex items-center gap-1 hover:text-gray-300 transition"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Phone className="h-4 w-4" />
-                                {store.phone}
-                              </a>
-                            )}
-                            {store.email && (
-                              <a
-                                href={`mailto:${store.email}`}
-                                className="flex items-center gap-1 hover:text-gray-300 transition"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Mail className="h-4 w-4" />
-                                {store.email}
-                              </a>
-                            )}
-                            {hoursStr && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                {hoursStr}
-                              </span>
-                            )}
-                          </div>
-                          {store.description && (
-                            <p className="mt-2 text-sm text-gray-500 line-clamp-2">
-                              {store.description}
-                            </p>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white">
+                          {store.name}
+                        </h3>
+                        <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          {store.address}
+                        </p>
+                        {/* Additional store details (if available) */}
+                        <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-500">
+                          {store.distance && (
+                            <span className="flex items-center gap-1">
+                              <Navigation className="h-4 w-4" />
+                              {formatDistance(store.distance)}
+                            </span>
+                          )}
+                          {store.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-4 w-4" />
+                              {store.phone}
+                            </span>
+                          )}
+                          {store.hours && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {store.hours}
+                            </span>
                           )}
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOrder(store);
-                          }}
-                          className="flex items-center gap-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-500 transition-colors text-sm font-medium shadow-sm"
-                        >
-                          Order
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOrder(store);
+                        }}
+                        className="flex items-center gap-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-500 transition-colors text-sm font-medium shadow-sm"
+                      >
+                        Order
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -240,7 +200,7 @@ const StoreFinder = () => {
             <div className="relative h-full rounded-2xl overflow-hidden shadow-xl border border-gray-800">
               <iframe
                 title={`Map showing ${selectedStore.name}`}
-                src={`https://maps.google.com/maps?q=${getStoreLatLng(selectedStore).lat},${getStoreLatLng(selectedStore).lng}&z=15&output=embed`}
+                src={`https://maps.google.com/maps?q=${selectedStore.lat},${selectedStore.lng}&z=15&output=embed`}
                 className="w-full h-full"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
