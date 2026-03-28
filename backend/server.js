@@ -20,6 +20,7 @@ try {
 import authRoutes from "./routes/auth.routes.js";
 import storeRoutes from "./routes/store.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
+import itemRoutes from "./routes/items.routes.js";
 
 // passport config
 import passport from "passport";
@@ -48,6 +49,7 @@ app.use(passport.initialize());
 app.use("/api/auth", authRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/items", itemRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

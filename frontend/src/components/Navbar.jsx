@@ -40,7 +40,10 @@ const Navbar = ({ children }) => {
           {/* Logo */}
           <div
             className="flex items-center text-lg font-semibold text-white tracking-wide cursor-pointer"
-            onClick={() => navigate("/")}
+            onClick={() => {
+              navigate("/")
+              setMobileOpen(false);
+            }}
           >
             <img src={Logo} alt="Logo" className="h-10 w-auto" />
             <span className="ml-3 text-sm md:text-lg font-semibold text-white tracking-wide">
@@ -120,14 +123,23 @@ const Navbar = ({ children }) => {
                 {item.name}
               </a>
             ))}
+            <button className="text-white/70 hover:text-white transition duration-200 flex items-center gap-2"
+            onClick={() => {
+              navigate("/stores")
+              setMobileOpen(false)
+            }}>
+              <MapPin /> Find Store
+            </button>
 
-            {/* <button
-              onClick={() => navigate("/dashboard")}
-              className="flex items-center text-white gap-2"
-            >
-              <Shield size={18} />
-              Admin Portal
-            </button> */}
+            {(user?.role === "admin" || user?.role === "staff") && (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="flex items-center text-white gap-2"
+              >
+                <Shield size={18} />
+                Admin Portal
+              </button>
+            )}
 
             {/* ✅ Conditional Auth Button (Mobile) */}
             {!user ? (
