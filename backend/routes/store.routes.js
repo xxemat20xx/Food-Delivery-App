@@ -1,5 +1,5 @@
 import express from "express";
-import Store from "../models/store.model.js";
+
 import {
   getStores,
   getStore,
