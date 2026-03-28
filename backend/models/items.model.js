@@ -32,4 +32,4 @@ const itemSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export const Items = mongoose.model("Category", itemSchema);
+export default mongoose.model("Items", itemSchema);

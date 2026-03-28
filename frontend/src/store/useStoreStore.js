@@ -6,14 +6,16 @@ export const useStoreStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchStores: async () => {
+  fetchStores: async (lat, lng) => {
     set({ loading: true, error: null });
 
     try {
-      const res = await axiosInstance.get("/stores");
+      const res = await axiosInstance.get("/stores", {
+        params: { lat, lng },
+      });
 
       set({
-        stores: res.data, // 🔥 THIS IS CRITICAL
+        stores: res.data.data,
         loading: false,
       });
     } catch (err) {

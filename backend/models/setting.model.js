@@ -11,4 +11,4 @@ const settingsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export const Settings = mongoose.model("Settings", settingsSchema);
+export default mongoose.model("Settings", settingsSchema);

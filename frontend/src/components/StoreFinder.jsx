@@ -12,6 +12,9 @@ const StoreFinder = () => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState(null);
 
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const today = days[new Date().getDay()]; // get current day in lowercase
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -160,12 +163,12 @@ const StoreFinder = () => {
                               {store.phone}
                             </span>
                           )}
-                          {store.hours && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {store.hours}
-                            </span>
-                          )}
+                        {store.hours && store.hours[today] && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {store.hours[today].open} - {store.hours[today].close}
+                          </span>
+                        )}
                         </div>
                       </div>
                       <button

@@ -8,4 +8,4 @@ const categorySchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
 });
 
-export const Category = mongoose.model("Category", categorySchema);
+export default mongoose.model("Category", categorySchema);

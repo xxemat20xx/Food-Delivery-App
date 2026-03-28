@@ -1,41 +1,41 @@
 import express from "express";
-import { Store } from "../models/store.model.js";
+import Store from "../models/store.model.js";
+import {
+  getStores,
+  getStore,
+  createStore,
+  updateStore,
+  deleteStore,
+} from "../controller/store.controller.js";
+
+import { verifyToken, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// GET all stores
-router.get("/", async (req, res) => {
-  try {
-    const stores = await Store.find();
-    res.json(stores);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// public routes
+router.get("/", getStores);
+router.get("/:idOrSlug", getStore);
 
-router.post("/seed", async (req, res) => {
-  try {
-    await Store.deleteMany(); // optional: clear old data
+// admin/staff routes
+router.post(
+  "/create-store",
+  verifyToken,
+  authorize("admin", "staff"),
+  createStore,
+);
 
-    const stores = await Store.insertMany([
-      {
-        name: "Inarawan Coffee Marikina",
-        address: "Marikina City",
-        lat: 14.6507,
-        lng: 121.1029,
-      },
-      {
-        name: "Inarawan Coffee Antipolo",
-        address: "Antipolo City",
-        lat: 14.6255,
-        lng: 121.1245,
-      },
-    ]);
+router.put(
+  "/admin/update-store/:id",
+  verifyToken,
+  authorize("admin", "staff"),
+  updateStore,
+);
 
-    res.json(stores);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.delete(
+  "/admin/delete-store/:id",
+  verifyToken,
+  authorize("admin", "staff"),
+  deleteStore,
+);
 
 export default router;

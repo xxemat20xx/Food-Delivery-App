@@ -86,4 +86,4 @@ const storeSchema = new mongoose.Schema(
 // Create geospatial index on location
 storeSchema.index({ location: "2dsphere" });
 
-export const Store = mongoose.model("Store", storeSchema);
+export default mongoose.model("Store", storeSchema);
