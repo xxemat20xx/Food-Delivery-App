@@ -33,8 +33,6 @@ export const getStores = async (req, res) => {
       };
     }
 
-    console.log("Mongo Query:", query); // Log the final query before sending to MongoDB
-
     const stores = await Store.find(query).select("-__v");
 
     if (stores.length === 0) {
