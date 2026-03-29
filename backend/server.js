@@ -22,6 +22,7 @@ import storeRoutes from "./routes/store.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import itemRoutes from "./routes/items.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 
 // passport config
 import passport from "passport";
@@ -52,6 +53,7 @@ app.use("/api/stores", storeRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/order", orderRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
