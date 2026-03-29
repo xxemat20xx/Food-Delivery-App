@@ -15,7 +15,7 @@ const Navbar = ({ children }) => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "Menu", path: "/menu" },
+    { name: "Menu", path: "/#menu" },
     { name: "About", path: "/#about" },
     { name: "Contact", path: "/#contact" },
   ];
@@ -116,7 +116,7 @@ const Navbar = ({ children }) => {
             {navItems.map((item) => (
               <a
                 key={item.name}
-                href={`#${item.targetId}`}
+                href={`${item.path}`}
                 onClick={() => setMobileOpen(false)}
                 className="text-white/70 hover:text-white transition"
               >
