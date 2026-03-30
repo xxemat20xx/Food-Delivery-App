@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { axiosInstance } from "../instances/axiosInstance";
+import { axiosInstance } from "../api/axiosInstance";
 
 export const useStoreStore = create((set) => ({
   stores: [],

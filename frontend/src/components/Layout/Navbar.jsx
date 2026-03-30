@@ -1,11 +1,11 @@
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X, LogOut, Shield, LogIn, MapPin } from "lucide-react";
 
-import Logo from "../assets/inarawan-logo.png";
+import Logo from "../../assets/inarawan-logo.png"
 
-import LoginModal from "../pages/Login";
+import LoginModal from "../../pages/Login/Login";
 
 const Navbar = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);

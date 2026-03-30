@@ -2,16 +2,16 @@ import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 //components
-import Navbar from './components/Navbar';
+import Navbar from './components/Layout/Navbar';
 
 // protect
 import ProtectedRoutes from './components/ProtectedRoutes';
 
 // pages
-import Login from './pages/Login';
-import Homepage from './pages/Homepage';
-import AdminDashboard from './pages/AdminDashboard';
-import StoreFinder from './components/StoreFinder';
+import Login from './pages/Login/Login';
+import Homepage from './pages/Home/Homepage';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import StoreFinder from './pages/Home/StoreFinder';
 import MenuPage from './pages/MenuPage';
 
 // store

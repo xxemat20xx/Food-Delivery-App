@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { getDistance } from "../utils/distance";
+import { getDistance } from "../../utils/distance";
 import { useNavigate } from "react-router-dom";
-import { useStoreStore } from "../store/useStoreStore";
+import { useStoreStore } from "../../store/useStoreStore";
 import { MapPin, Navigation, Star, Clock, Phone, ChevronRight } from "lucide-react";
 
 const StoreFinder = () => {

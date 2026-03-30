@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { axiosInstance } from "../instances/axiosInstance";
+import { axiosInstance } from "../api/axiosInstance";
 import { toast } from "react-toastify";
+import * as authApi from "../api/endpoints/authApi";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -10,29 +11,26 @@ export const useAuthStore = create((set) => ({
   message: null,
   error: null,
 
-  register: async ({ name, email, password }) => {
+  register: async (userData) => {
     try {
       set({ isLoading: true, error: null });
 
-      const res = await axiosInstance.post("/auth/register", {
-        name,
-        email,
-        password,
+      const res = await authApi.register(userData);
+
+      set({
+        user: res.data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        message: res.data.message,
       });
 
-      const message = res.data.message;
-
-      set({ isLoading: false, message });
-
-      toast.success(message);
+      toast.success(res.data.message);
 
       return res.data;
     } catch (error) {
       const message = error.response?.data?.message || "Registration failed";
 
       set({ isLoading: false, error: message });
-
-      toast.error(message);
     }
   },
 
@@ -40,10 +38,7 @@ export const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const res = await axiosInstance.post("/auth/verify", {
-        email,
-        otp,
-      });
+      const res = await authApi.verifyEmail({ email, otp });
 
       const message = res.data.message;
 
@@ -56,8 +51,6 @@ export const useAuthStore = create((set) => ({
       const message = error.response?.data?.message || "Verification failed";
 
       set({ isLoading: false, error: message });
-
-      toast.error(message);
     }
   },
 
@@ -65,7 +58,7 @@ export const useAuthStore = create((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const res = await axiosInstance.post("/auth/forgot-password", { email });
+      const res = await authApi.forgotPassword({ email });
 
       set({ isLoading: false });
 
@@ -80,17 +73,13 @@ export const useAuthStore = create((set) => ({
         isLoading: false,
         error: message,
       });
-
-      toast.error(message);
     }
   },
   resetPassword: async ({ token, newPassword }) => {
     try {
       set({ isLoading: true });
 
-      const res = await axiosInstance.post(`/auth/reset-password/${token}`, {
-        password: newPassword,
-      });
+      const res = await authApi.resetPassword({ token, newPassword });
       set({ isLoading: false });
       return res.data;
     } catch (error) {
@@ -99,39 +88,32 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  login: async ({ email, password }) => {
+  login: async (data) => {
     try {
       set({ isLoading: true, error: null });
 
-      const res = await axiosInstance.post("/auth/login", {
-        email,
-        password,
-      });
-
-      const message = res.data.message;
+      const res = await authApi.login(data);
 
       set({
         user: res.data.user,
         isAuthenticated: true,
         isLoading: false,
-        message,
+        message: res.data.message,
       });
 
-      toast.success(message);
+      toast.success(res.data.message);
 
       return res.data; // ✅ ADD THIS
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
 
       set({ isLoading: false, error: message });
-
-      toast.error(message);
     }
   },
 
   logout: async () => {
     try {
-      await axiosInstance.post("/auth/logout");
+      await authApi.logout();
 
       set({
         user: null,
@@ -148,7 +130,7 @@ export const useAuthStore = create((set) => ({
     try {
       set({ isCheckingAuth: true });
 
-      const res = await axiosInstance.get("/auth/me");
+      const res = await authApi.getProfile();
 
       set({
         user: res.data.user,
@@ -163,4 +145,5 @@ export const useAuthStore = create((set) => ({
       });
     }
   },
+  clearError: () => set({ error: null }),
 }));

@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
 const LoginModal = ({ open, onClose }) => {
@@ -236,6 +236,7 @@ const LoginModal = ({ open, onClose }) => {
                 fullWidth
                 margin="normal"
                 value={password}
+                autoComplete=""
                 onChange={(e) => setPassword(e.target.value)}
                 error={!!errors.password}
                 helperText={errors.password}
