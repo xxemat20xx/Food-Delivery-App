@@ -128,7 +128,7 @@ const StoreDashboard = () => {
       ) : error ? (
         <div className="text-red-600 py-6 text-center">{error}</div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Store List */}
           <div className="bg-gray-900 shadow rounded-lg p-4 max-h-[600px] overflow-y-auto">
             {filteredStores.length === 0 ? (
