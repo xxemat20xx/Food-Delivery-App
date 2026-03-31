@@ -13,7 +13,7 @@ const StoreFinder = () => {
   const [locationError, setLocationError] = useState(null);
 
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const today = days[new Date().getDay()]; // get current day in lowercase
+  const today = days[new Date().getDay()];
 
   const navigate = useNavigate();
 
@@ -35,10 +35,16 @@ const StoreFinder = () => {
       (pos) => {
         const { latitude, longitude } = pos.coords;
 
-        const computed = stores.map((store) => ({
-          ...store,
-          distance: getDistance(latitude, longitude, store.lat, store.lng),
-        }));
+        const computed = stores.map((store) => {
+          const lat = parseFloat(store.lat ?? store.location?.coordinates?.[1]);
+          const lng = parseFloat(store.lng ?? store.location?.coordinates?.[0]);
+          return {
+            ...store,
+            lat,
+            lng,
+            distance: getDistance(latitude, longitude, lat, lng),
+          };
+        });
 
         computed.sort((a, b) => a.distance - b.distance);
 
@@ -77,7 +83,6 @@ const StoreFinder = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column - Store List */}
         <div className="space-y-6">
-          {/* Location Button */}
           <button
             onClick={handleFind}
             disabled={locationLoading || loading}
@@ -96,7 +101,6 @@ const StoreFinder = () => {
             )}
           </button>
 
-          {/* Loading / Error States */}
           {loading && (
             <div className="flex justify-center py-8">
               <div className="animate-pulse text-gray-400">Loading stores...</div>
@@ -115,12 +119,9 @@ const StoreFinder = () => {
             </div>
           )}
 
-          {/* Store List */}
           {results.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-white">
-                Stores near you
-              </h2>
+              <h2 className="text-xl font-semibold text-white">Stores near you</h2>
               <div className="space-y-3">
                 {results.map((store, index) => (
                   <div
@@ -132,7 +133,6 @@ const StoreFinder = () => {
                         : "border-gray-800 bg-gray-900 hover:border-gray-700 hover:shadow-md"
                     }`}
                   >
-                    {/* Badge for nearest store */}
                     {index === 0 && (
                       <div className="absolute top-3 right-3 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
                         <Star className="h-3 w-3 fill-current" />
@@ -142,14 +142,11 @@ const StoreFinder = () => {
 
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">
-                          {store.name}
-                        </h3>
+                        <h3 className="text-lg font-semibold text-white">{store.name}</h3>
                         <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                           <MapPin className="h-4 w-4 flex-shrink-0" />
                           {store.address}
                         </p>
-                        {/* Additional store details (if available) */}
                         <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-500">
                           {store.distance && (
                             <span className="flex items-center gap-1">
@@ -163,12 +160,12 @@ const StoreFinder = () => {
                               {store.phone}
                             </span>
                           )}
-                        {store.hours && store.hours[today] && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {store.hours[today].open} - {store.hours[today].close}
-                          </span>
-                        )}
+                          {store.hours && store.hours[today] && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {store.hours[today].open} - {store.hours[today].close}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <button
@@ -188,7 +185,6 @@ const StoreFinder = () => {
             </div>
           )}
 
-          {/* Empty State */}
           {!loading && results.length === 0 && !locationError && (
             <div className="text-center py-12 bg-gray-900 rounded-2xl border border-gray-800">
               <MapPin className="h-12 w-12 text-gray-600 mx-auto mb-3" />
@@ -201,14 +197,20 @@ const StoreFinder = () => {
         <div className="lg:sticky lg:top-8 h-[500px] lg:h-[calc(100vh-6rem)]">
           {selectedStore ? (
             <div className="relative h-full rounded-2xl overflow-hidden shadow-xl border border-gray-800">
-              <iframe
-                title={`Map showing ${selectedStore.name}`}
-                src={`https://maps.google.com/maps?q=${selectedStore.lat},${selectedStore.lng}&z=15&output=embed`}
-                className="w-full h-full"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-              {/* Overlay for store info */}
+              {(() => {
+                const lat = parseFloat(selectedStore.lat ?? selectedStore.location?.coordinates?.[1]);
+                const lng = parseFloat(selectedStore.lng ?? selectedStore.location?.coordinates?.[0]);
+                return (
+                  <iframe
+                    title={`Map showing ${selectedStore.name}`}
+                    src={`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
+                    className="w-full h-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                );
+              })()}
+
               <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-700">
                 <p className="font-semibold text-white">{selectedStore.name}</p>
                 <p className="text-sm text-gray-300 truncate">{selectedStore.address}</p>

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { axiosInstance } from "../api/axiosInstance";
 import { toast } from "react-toastify";
 import * as authApi from "../api/endpoints/authApi";
 

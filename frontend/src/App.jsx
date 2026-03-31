@@ -12,7 +12,7 @@ import Login from './pages/Login/Login';
 import Homepage from './pages/Home/Homepage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import StoreFinder from './pages/Home/StoreFinder';
-import MenuPage from './pages/MenuPage';
+import MenuPage from './pages/Menu/MenuPage';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
@@ -69,7 +69,7 @@ const App = () => {
         }
       />
       <Route
-        path="/dashboard"
+        path="/admin-dashboard"
         element={
           <ProtectedRoutes>
             <AdminDashboard />

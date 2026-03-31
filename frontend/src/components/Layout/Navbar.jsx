@@ -69,7 +69,7 @@ const Navbar = ({ children }) => {
 
             {(user?.role === "admin" || user?.role === "staff") && (
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/admin-dashboard")}
                 className="flex items-center text-white gap-2"
               >
                 <Shield size={18} />
@@ -133,7 +133,7 @@ const Navbar = ({ children }) => {
 
             {(user?.role === "admin" || user?.role === "staff") && (
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/admin-dashboard")}
                 className="flex items-center text-white gap-2"
               >
                 <Shield size={18} />
