@@ -147,6 +147,10 @@ export const loginUser = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    await redisClient.set(`refresh:${user._id}`, refreshToken, {
+      EX: 7 * 24 * 60 * 60,
+    });
+
     res.cookie("accessToken", accessToken, {
       ...cookieOptions,
       maxAge: 86400000,
@@ -260,11 +264,30 @@ export const refreshAccessToken = async (req, res) => {
 
     const user = await User.findById(decoded.userId);
 
+    // const newAccessToken = generateAccessToken(user);
+    // ✅ CHECK STORED TOKEN
+    const storedToken = await redisClient.get(`refresh:${user._id}`);
+
+    if (storedToken !== token) {
+      return res.status(401).json({ message: "Invalid session" });
+    }
+
+    // 🔁 ROTATE TOKEN
     const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    await redisClient.set(`refresh:${user._id}`, newRefreshToken, {
+      EX: 7 * 24 * 60 * 60,
+    });
 
     res.cookie("accessToken", newAccessToken, {
       ...cookieOptions,
       maxAge: 86400000,
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 86400000,
     });
 
     res.json({ message: "Token refreshed" });
@@ -273,24 +296,24 @@ export const refreshAccessToken = async (req, res) => {
   }
 };
 
-export const logoutUser = (req, res) => {
-  res.clearCookie("accessToken", cookieOptions);
-  res.clearCookie("refreshToken", cookieOptions);
+export const logoutUser = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
 
-  res.json({ message: "Logged out" });
+    if (token) {
+      const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+      await redisClient.del(`refresh:${decoded.userId}`);
+    }
+
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+
+    res.json({ message: "Logged out" });
+  } catch {
+    res.json({ message: "Logged out" });
+  }
 };
-
-// export const checkAuth = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.userId);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     res.json({ user });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 export const checkAuth = async (req, res) => {
   try {
     res.json({ user: req.user });
