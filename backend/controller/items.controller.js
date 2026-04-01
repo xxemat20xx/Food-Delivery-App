@@ -1,4 +1,17 @@
 import Items from "../models/items.model.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinaryUpload.js";
+
+// Helper to parse JSON fields from multipart/form-data
+const parseJSONFields = (body) => {
+  const parsed = { ...body };
+  if (body.storePrices) parsed.storePrices = JSON.parse(body.storePrices);
+  if (body.customizations)
+    parsed.customizations = JSON.parse(body.customizations);
+  return parsed;
+};
 
 // @desc    Get all items (public, can filter by category, store, etc.)
 // @route   GET /api/items
@@ -45,30 +58,39 @@ export const getItem = async (req, res) => {
 // @access  Private/Admin
 export const createItem = async (req, res) => {
   try {
+    // Parse JSON fields (since they come as strings in multipart)
+    const itemData = parseJSONFields(req.body);
     const {
       name,
       description,
-      image,
       category,
       storePrices,
       basePrice,
       customizations,
-    } = req.body;
+    } = itemData;
+
+    let imageUrl = "";
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, "items");
+      imageUrl = result.secure_url;
+    }
+
     const newItem = new Items({
       name,
       description,
-      image,
+      image: imageUrl,
       category,
       storePrices,
       basePrice,
       customizations,
       isAvailable: true,
     });
+
     await newItem.save();
     res.status(201).json({ success: true, data: newItem });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -78,18 +100,39 @@ export const createItem = async (req, res) => {
 export const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await Items.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updated)
+    const item = await Item.findById(id);
+    if (!item)
       return res
         .status(404)
         .json({ success: false, message: "Item not found" });
+
+    // Parse JSON fields
+    const updateData = parseJSONFields(req.body);
+
+    // Handle image update
+    if (req.file) {
+      // Delete old image from Cloudinary if exists
+      if (item.image) {
+        const publicId = item.image
+          .split("/")
+          .slice(-2)
+          .join("/")
+          .split(".")[0]; // extract public ID
+        await deleteFromCloudinary(publicId);
+      }
+      const result = await uploadToCloudinary(req.file.buffer, "items");
+      updateData.image = result.secure_url;
+    }
+
+    // Update the item
+    const updated = await Item.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

@@ -76,7 +76,7 @@ export const verify = async (req, res) => {
     const storedOTP = await redisClient.get(`otp:${email}`);
 
     if (!storedOTP) {
-      return res.status(400).json({ message: "OTP Expired" });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     let attempts = parseInt(
@@ -177,7 +177,7 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
 
     // Generate reset token and hashed version
@@ -197,7 +197,7 @@ export const forgotPassword = async (req, res) => {
         ResetPasswordEmail({ resetUrl }),
       );
 
-      res.json({ message: "A reset link was sent to your email" });
+      res.json({ message: "If account exists, reset link sent" });
     } catch (emailError) {
       // Delete Redis token if email fails
       await redisClient.del(`reset:${email}`);

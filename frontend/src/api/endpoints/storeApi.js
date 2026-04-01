@@ -1,21 +1,12 @@
 import { axiosInstance } from "../axiosInstance";
 
-// ✅ GET ALL STORES (with optional query params: lat, lng, maxDistance)
-export const fetchStores = (params = {}) =>
-  axiosInstance.get("/stores", { params });
+export const fetchItems = (config) => axios.get("/api/items", config);
 
-// ✅ GET SINGLE STORE (by ID or slug)
-export const fetchStore = (idOrSlug) =>
-  axiosInstance.get(`/stores/${idOrSlug}`);
+export const fetchItem = (id) => axios.get(`/api/items/${id}`);
 
-// ✅ CREATE STORE
-export const createStore = (payload) =>
-  axiosInstance.post("/stores/create-store", payload);
+export const createItem = (data) => axios.post("/api/items/create-item", data);
 
-// ✅ UPDATE STORE
-export const updateStore = (id, payload) =>
-  axiosInstance.put(`/admin/stores/${id}`, payload);
+export const updateItem = (id, data) =>
+  axios.put(`/api/admin/items/${id}`, data);
 
-// ✅ DELETE STORE (soft delete)
-export const deleteStore = (id) =>
-  axiosInstance.delete(`/stores/admin/delete-store/${id}`);
+export const deleteItem = (id) => axios.delete(`/api/admin/items/${id}`);

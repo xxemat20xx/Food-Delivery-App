@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import StoreDashboard from "./StoreDashboard";
+import ItemsDashboard from "./ItemsDashboard";
+
 import { Home, ShoppingCart, Box, Settings, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,7 +16,7 @@ const AdminDashboard = () => {
       case "orders":
         return <div className="p-6 text-white">Orders Dashboard (Coming Soon)</div>;
       case "products":
-        return <div className="p-6 text-white">Products Dashboard (Coming Soon)</div>;
+        return <ItemsDashboard />;
       case "settings":
         return <div className="p-6 text-white">Settings Dashboard (Coming Soon)</div>;
       default:
