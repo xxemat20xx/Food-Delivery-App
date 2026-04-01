@@ -13,21 +13,14 @@ export const useItemStore = create((set, get) => ({
 
   // =========================
   // GET ALL ITEMS
-  // =========================
-  fetchItems: async ({ storeId, category } = {}) => {
-    set({ loading: true, error: null });
-
+  fetchItems: async (storeId, categoryId) => {
+    set({ loading: true });
     try {
       const params = {};
       if (storeId) params.storeId = storeId;
-      if (category) params.category = category;
-
-      const { data } = await itemsApi.fetchItems({ params });
-
-      set({
-        items: data.data,
-        loading: false,
-      });
+      if (categoryId) params.category = categoryId;
+      const res = await itemsApi.fetchItems({ params });
+      set({ items: res.data.data, loading: false });
     } catch (error) {
       set({
         error: error.response?.data?.message || "Failed to fetch items",
