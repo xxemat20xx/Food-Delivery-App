@@ -4,3 +4,10 @@
 body {
   font-family: 'Roboto', sans-serif;
 }   
+
+:root {
+  --color-primary: #E67514;
+  --color-dark: #212121;
+  --color-green: #06923E;
+  --color-lightGray: #D3ECCD;
+}

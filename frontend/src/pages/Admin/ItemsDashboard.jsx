@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useItemStore } from "../../store/useItemStore";
+import ItemForm from "../../components/admin/ItemForm";
 
 import { PlusCircle } from "lucide-react"
 
@@ -22,7 +23,9 @@ const ItemsDashboard = () => {
         fetchItems();
     },[fetchItems]);
 
-    console.log(items)
+    const openAddItemModal = () => {
+      setModalOpen(true);
+    }
   return (
     <div className="min-h-screen bg-black text-white p-6">
         {/* Header */}
@@ -30,11 +33,14 @@ const ItemsDashboard = () => {
         <h1 className="text-2xl font-bold text-amber-400">Items Management</h1>
         <button
           className="flex items-center gap-2 bg-amber-500 text-black px-4 py-2 rounded-lg hover:bg-amber-400 transition-colors"
-          onClick={() => {}} //add click handler
+          onClick={openAddItemModal} //add click handler
         >
           <PlusCircle className="h-5 w-5" /> Add Items
         </button>
       </div>
+       {modalOpen && (
+         <ItemForm onClose={() => setModalOpen(false)} />
+       )}
     </div>
   )
 }

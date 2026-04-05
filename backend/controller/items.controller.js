@@ -7,12 +7,28 @@ import {
 // Helper to parse JSON fields from multipart/form-data
 const parseJSONFields = (body) => {
   const parsed = { ...body };
-  if (body.storePrices) parsed.storePrices = JSON.parse(body.storePrices);
-  if (body.customizations)
-    parsed.customizations = JSON.parse(body.customizations);
+
+  // Safely parse the fields as JSON
+  try {
+    if (body.storePrices) {
+      parsed.storePrices = JSON.parse(body.storePrices);
+    }
+  } catch (e) {
+    console.error("Error parsing storePrices: ", e);
+    parsed.storePrices = []; // Fallback to an empty array
+  }
+
+  try {
+    if (body.customizations) {
+      parsed.customizations = JSON.parse(body.customizations);
+    }
+  } catch (e) {
+    console.error("Error parsing customizations: ", e);
+    parsed.customizations = []; // Fallback to an empty array
+  }
+
   return parsed;
 };
-
 // @desc    Get all items (public, can filter by category, store, etc.)
 // @route   GET /api/items
 // @access  Public
@@ -58,8 +74,16 @@ export const getItem = async (req, res) => {
 // @access  Private/Admin
 export const createItem = async (req, res) => {
   try {
+    // Log the incoming body to inspect
+    console.log("Incoming request body: ", req.body);
+    console.log("File: ", req.file); // Log the uploaded file
+
     // Parse JSON fields (since they come as strings in multipart)
     const itemData = parseJSONFields(req.body);
+
+    // Log parsed itemData to inspect
+    console.log("Parsed item data: ", itemData);
+
     const {
       name,
       description,
@@ -69,12 +93,22 @@ export const createItem = async (req, res) => {
       customizations,
     } = itemData;
 
+    // Validate that these fields are not undefined or null
+    if (!storePrices || !customizations) {
+      return res.status(400).json({
+        success: false,
+        message: "Store Prices or Customizations are missing or malformed",
+      });
+    }
+
+    // Handle image upload
     let imageUrl = "";
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer, "items");
-      imageUrl = result.secure_url;
+      imageUrl = result.secure_url; // Get image URL from Cloudinary
     }
 
+    // Create new item in the database
     const newItem = new Items({
       name,
       description,
@@ -87,9 +121,11 @@ export const createItem = async (req, res) => {
     });
 
     await newItem.save();
+
+    // Respond with the new item
     res.status(201).json({ success: true, data: newItem });
   } catch (error) {
-    console.error(error);
+    console.error("Error during item creation: ", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

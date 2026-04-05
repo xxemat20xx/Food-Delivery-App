@@ -163,7 +163,7 @@ const Navbar = ({ children }) => {
         </div>
       </nav>
 
-      <main className="p-12 mt-12 md:mt-16 bg-black text-slate-100 min-h-screen">
+      <main className="p-12 mt-12 md:mt-16 min-h-screen bg-[var(--color-dark)]">
         {children}
       </main>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />

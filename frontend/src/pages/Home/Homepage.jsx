@@ -10,11 +10,11 @@ const Homepage = () => {
     >
       {/* TEXT CONTENT */}
       <div className="space-y-6 text-center md:text-left">
-        <h1 className="text-amber-600 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-          Arawan Coffee
+        <h1 className="text-[var(--color-primary)] text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
+          Inarawan Coffee
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-300 max-w-xl mx-auto md:mx-0">
+        <p className="text-base sm:text-lg text-[var(--color-lightGray)] max-w-xl mx-auto md:mx-0">
           Founded in 2020, Inarawan Coffee emerged from a passion for exceptional
           coffee and a commitment to community. Our journey began in a small,
           cozy café where we sourced beans from local farms, ensuring that each

@@ -1,4 +1,4 @@
-import axiosInstance from "../axiosInstance";
+import { axiosInstance } from "../axiosInstance";
 
 // =========================
 // GET ALL ITEMS
@@ -13,14 +13,22 @@ export const fetchItem = (id) => axiosInstance.get(`/items/${id}`);
 // =========================
 // CREATE ITEM (ADMIN)
 // =========================
-export const createItem = (data) => axiosInstance.post("/create-item", data);
+export const createItem = (data) =>
+  axiosInstance.post("/items/create-item", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 // =========================
 // UPDATE ITEM (ADMIN)
 // =========================
 export const updateItem = (id, data) =>
-  axiosInstance.put(`/update-item/${id}`, data);
-
+  axiosInstance.put(`/update-item/${id}`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 // =========================
 // DELETE ITEM (SOFT DELETE)
 // =========================
