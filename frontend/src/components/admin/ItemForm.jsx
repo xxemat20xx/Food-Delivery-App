@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCategoryStore } from "../../store/useCategoryStore";
 import { useStoreStore } from "../../store/useStoreStore";
 import { useItemStore } from '../../store/useItemStore';
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { toast } from 'react-toastify';
 
 import CategoryForm from './CategoryForm';
@@ -12,6 +13,9 @@ const ItemForm = ({ onClose, item }) => {
     const { fetchStores, stores } = useStoreStore();
     const { createItem, updateItem, loading } = useItemStore();
     const [ showCategoryModal, setShowCategoryModal ] = useState(false);
+
+    //Custom Category Dropdown
+    const [open, setOpen] = useState(false)
     
     const [formData, setFormData] = useState({
         name: '',
@@ -184,17 +188,61 @@ const ItemForm = ({ onClose, item }) => {
                                         required
                                         className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                     />
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => handleChange('category', e.target.value)}
-                                        required
-                                        className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    <div className="relative w-full">
+
+                                    {/* Trigger */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpen(!open)}
+                                        className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white text-left flex justify-between items-center"
                                     >
-                                        <option value="">Select Category</option>
-                                        {categories.map(cat => (
-                                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                        {categories.find(c => c._id === formData.category)?.name || "Select Category"}
+                                        <MoreVertical size={18} />
+                                    </button>
+
+                                    {/* Dropdown */}
+                                    {open && (
+                                        <div className="absolute z-50 mt-2 w-full bg-[#2a2a2a] border border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+
+                                        {categories.map((cat) => (
+                                            <div
+                                            key={cat._id}
+                                            className="flex items-center justify-between px-3 py-2 hover:bg-[#3a3a3a] cursor-pointer"
+                                            >
+                                            {/* Select category */}
+                                            <span
+                                                onClick={() => {
+                                                handleChange("category", cat._id);
+                                                setOpen(false);
+                                                }}
+                                                className="flex-1 text-white"
+                                            >
+                                                {cat.name}
+                                            </span>
+
+                                            {/* Actions */}
+                                            <div className="flex gap-2">
+                                                <button
+                                                type="button"
+                                                onClick={() => console.log("edit", cat._id)}
+                                                className="text-blue-400 hover:text-blue-300"
+                                                >
+                                                <Pencil size={16} />
+                                                </button>
+
+                                                <button
+                                                type="button"
+                                                onClick={() => console.log("delete", cat._id)}
+                                                className="text-red-400 hover:text-red-300"
+                                                >
+                                                <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            </div>
                                         ))}
-                                    </select>
+                                        </div>
+                                    )}
+                                    </div>
                                 </div>
                                 <textarea
                                     rows="3"

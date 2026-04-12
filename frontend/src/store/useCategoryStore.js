@@ -41,7 +41,7 @@ export const useCategoryStore = create((set, get) => ({
   updateCategory: async (id, categoryData) => {
     set({ loading: true });
     try {
-      const res = await axios.put(`/admin/categories/${id}`, categoryData);
+      const res = await categoryApi.updateCategory(id, categoryData);
       set((state) => ({
         categories: state.categories.map((cat) =>
           cat._id === id ? res.data.data : cat,
