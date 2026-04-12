@@ -4,10 +4,14 @@ import { useStoreStore } from "../../store/useStoreStore";
 import { useItemStore } from '../../store/useItemStore';
 import { toast } from 'react-toastify';
 
-const ItemForm = ({ onClose }) => {
+import CategoryForm from './CategoryForm';
+
+const ItemForm = ({ onClose, item }) => {
+    const isEdit = !!item;
     const { fetchCategories, categories } = useCategoryStore();
     const { fetchStores, stores } = useStoreStore();
-    const { createItem, loading } = useItemStore(); // loading from store
+    const { createItem, updateItem, loading } = useItemStore();
+    const [ showCategoryModal, setShowCategoryModal ] = useState(false);
     
     const [formData, setFormData] = useState({
         name: '',
@@ -21,13 +25,31 @@ const ItemForm = ({ onClose }) => {
 
     const [imagePreview, setImagePreview] = useState(null);
 
-    // Fetch data on mount
+    useEffect(() => {
+        if (isEdit && item) {
+            setFormData({
+                name: item.name || '',
+                description: item.description || '',
+                category: item.category?._id || item.category || '',
+                basePrice: item.basePrice || '',
+                storePrices: item.storePrices?.length ? item.storePrices : [{ store: '', price: '' }],
+                customizations: item.customizations?.length 
+                    ? item.customizations.map(c => ({
+                        name: c.name,
+                        options: Array.isArray(c.options) ? c.options.join(', ') : c.options || ''
+                      }))
+                    : [{ name: '', options: '' }],
+                image: null
+            });
+            if (item.image) setImagePreview(item.image);
+        }
+    }, [isEdit, item]);
+
     useEffect(() => {
         fetchCategories();
         fetchStores();
     }, [fetchCategories, fetchStores]);
 
-    // Generic change handler
     const handleChange = (field, value, index = null, subField = null) => {
         if (index !== null && subField !== null) {
             const updated = [...formData[field]];
@@ -45,6 +67,23 @@ const ItemForm = ({ onClose }) => {
         });
     };
 
+    const addAllStores = () => {
+        const existingStoreIds = formData.storePrices.map(sp => sp.store);
+        const newStores = stores
+            .filter(store => !existingStoreIds.includes(store._id))
+            .map(store => ({ store: store._id, price: '' }));
+        
+        if (newStores.length === 0) {
+            toast.info('All stores are already added');
+            return;
+        }
+        
+        setFormData({
+            ...formData,
+            storePrices: [...formData.storePrices, ...newStores]
+        });
+    };
+
     const addCustomization = () => {
         setFormData({ 
             ...formData, 
@@ -52,11 +91,9 @@ const ItemForm = ({ onClose }) => {
         });
     };
 
-    // Submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Basic validation
         if (!formData.name.trim()) {
             toast.error('Product name is required');
             return;
@@ -70,40 +107,42 @@ const ItemForm = ({ onClose }) => {
             return;
         }
 
-        // Prepare FormData
         const submitData = new FormData();
         submitData.append('name', formData.name);
         submitData.append('description', formData.description);
         submitData.append('category', formData.category);
         if (formData.basePrice) submitData.append('basePrice', formData.basePrice);
         
-        // Filter out empty store prices and send as JSON string
         const validStorePrices = formData.storePrices.filter(sp => sp.store && sp.price);
         if (validStorePrices.length > 0) {
             submitData.append('storePrices', JSON.stringify(validStorePrices));
         }
         
-        // Filter out empty customizations and send as JSON string
         const validCustomizations = formData.customizations.filter(c => c.name.trim());
         if (validCustomizations.length > 0) {
             const formattedCustoms = validCustomizations.map(c => ({
                 name: c.name,
                 options: c.options.split(',').map(opt => opt.trim()),
-                extraCost: 0 // default, can be changed later
+                extraCost: 0
             }));
             submitData.append('customizations', JSON.stringify(formattedCustoms));
         }
         
-        if (formData.image) {
+        if (formData.image && formData.image instanceof File) {
             submitData.append('image', formData.image);
         }
 
         try {
-            await createItem(submitData);
-            toast.success('Item created successfully!');
-            onClose(); // close modal after success
+            if (isEdit) {
+                await updateItem(item._id, submitData);
+                toast.success('Item updated successfully!');
+            } else {
+                await createItem(submitData);
+                toast.success('Item created successfully!');
+            }
+            onClose();
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to create item');
+            toast.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'create'} item`);
         }
     };
 
@@ -111,21 +150,31 @@ const ItemForm = ({ onClose }) => {
         <div className="fixed inset-0 bg-black/80 overflow-y-auto z-50 p-6">
             <form onSubmit={handleSubmit}>
                 <div className="max-w-6xl mx-auto space-y-6">
-                    {/* Header */}
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Create Item</h1>
-                        <p className="text-gray-400 text-sm mt-1">Add a new product to your menu</p>
+                        <h1 className="text-3xl font-bold text-white">
+                            {isEdit ? 'Edit Item' : 'Create Item'}
+                        </h1>
+                        <p className="text-gray-400 text-sm mt-1">
+                            {isEdit ? 'Modify product details' : 'Add a new product to your menu'}
+                        </p>
                     </div>
 
-                    {/* Main Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
                         {/* LEFT SIDE */}
                         <div className="lg:col-span-2 space-y-6">
-
                             {/* Basic Info */}
                             <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
                                 <h2 className="text-white font-semibold mb-4">Basic Information</h2>
+                                                               <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-white font-semibold">Pricing</h2>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCategoryModal(true)}
+                                        className="text-sm bg-green-600 hover:bg-green-500 px-3 py-1 rounded-lg transition"
+                                    >
+                                        + Add New Category
+                                    </button>
+                                </div>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <input
                                         type="text"
@@ -156,20 +205,27 @@ const ItemForm = ({ onClose }) => {
                                 />
                             </div>
 
-                            {/* Pricing */}
+                            {/* Pricing with Add All Stores */}
                             <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
-                                <h2 className="text-white font-semibold mb-4">Pricing</h2>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-white font-semibold">Pricing</h2>
+                                    <button
+                                        type="button"
+                                        onClick={addAllStores}
+                                        className="text-sm bg-green-600 hover:bg-green-500 px-3 py-1 rounded-lg transition"
+                                    >
+                                        + Add All Stores
+                                    </button>
+                                </div>
                                 <input
                                     type="number"
                                     step="0.01"
                                     placeholder="Base Price (optional if store-specific prices provided)"
                                     value={formData.basePrice}
                                     onChange={(e) => handleChange('basePrice', e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
                                 />
-
-                                <div className="space-y-3 mt-4">
-                                    <label className="text-gray-300 text-sm">Store-specific prices</label>
+                                <div className="space-y-3">
                                     {formData.storePrices.map((storePrice, idx) => (
                                         <div key={idx} className="grid md:grid-cols-3 gap-3">
                                             <select
@@ -239,17 +295,11 @@ const ItemForm = ({ onClose }) => {
 
                         {/* RIGHT SIDE */}
                         <div className="space-y-6">
-
-                            {/* Image Upload */}
                             <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
                                 <h2 className="text-white font-semibold mb-4">Product Image</h2>
                                 <label className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-orange-500 transition bg-[#1f1f1f]">
                                     {imagePreview ? (
-                                        <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="h-full object-contain rounded-xl"
-                                        />
+                                        <img src={imagePreview} alt="Preview" className="h-full object-contain rounded-xl" />
                                     ) : (
                                         <p className="text-gray-400 text-sm">Click to upload image</p>
                                     )}
@@ -268,14 +318,13 @@ const ItemForm = ({ onClose }) => {
                                 </label>
                             </div>
 
-                            {/* Actions */}
                             <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
                                 <button
                                     type="submit"
                                     disabled={loading}
                                     className="w-full py-3 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-500 transition shadow-lg disabled:opacity-50"
                                 >
-                                    {loading ? 'Saving...' : 'Save Item'}
+                                    {loading ? 'Saving...' : (isEdit ? 'Update Item' : 'Save Item')}
                                 </button>
                                 <button
                                     type="button"
@@ -289,6 +338,9 @@ const ItemForm = ({ onClose }) => {
                     </div>
                 </div>
             </form>
+            {showCategoryModal && (
+              <CategoryForm onClose={() => setShowCategoryModal(false)} />
+            )}
         </div>
     );
 };

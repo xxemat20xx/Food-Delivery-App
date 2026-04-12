@@ -136,7 +136,7 @@ export const createItem = async (req, res) => {
 export const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await Item.findById(id);
+    const item = await Items.findById(id);
     if (!item)
       return res
         .status(404)
@@ -161,7 +161,7 @@ export const updateItem = async (req, res) => {
     }
 
     // Update the item
-    const updated = await Item.findByIdAndUpdate(id, updateData, {
+    const updated = await Items.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
@@ -171,20 +171,52 @@ export const updateItem = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Delete item (soft delete)
+const getPublicIdFromUrl = (url) => {
+  if (!url) return null;
+  // URL pattern: https://res.cloudinary.com/.../upload/v1234567890/folder/image.jpg
+  const parts = url.split("/upload/");
+  if (parts.length < 2) return null;
+  const publicIdWithExt = parts[1];
+  // Remove version prefix (v1234567890/) if present
+  const withoutVersion = publicIdWithExt.replace(/^v\d+\//, "");
+  // Remove file extension
+  const lastDot = withoutVersion.lastIndexOf(".");
+  return lastDot !== -1 ? withoutVersion.substring(0, lastDot) : withoutVersion;
+};
+// @desc    Delete item (soft delete + remove image from Cloudinary)
 // @route   DELETE /api/admin/items/:id
 // @access  Private/Admin
 export const deleteItem = async (req, res) => {
   try {
-    const item = await Items.findById(req.params.id);
-    if (!item)
+    const item = await Items.findByIdAndDelete(req.params.id);
+    if (!item) {
       return res
         .status(404)
         .json({ success: false, message: "Item not found" });
-    item.isAvailable = false;
-    await item.save();
-    res.status(200).json({ success: true, message: "Item deactivated" });
+    }
+
+    // Delete image from Cloudinary if it exists
+    if (item.image) {
+      const publicId = getPublicIdFromUrl(item.image);
+      if (publicId) {
+        try {
+          await deleteFromCloudinary(publicId);
+          console.log(`Deleted image ${publicId} from Cloudinary`);
+        } catch (cloudinaryError) {
+          console.error("Cloudinary deletion error:", cloudinaryError);
+          // Continue with soft delete even if Cloudinary fails
+        }
+      }
+    }
+
+    // item.isAvailable = false;// Soft delete the item
+
+    await item.save(); //delete to db
+
+    res.status(200).json({
+      success: true,
+      message: "Item deactivated and image removed from Cloudinary",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });

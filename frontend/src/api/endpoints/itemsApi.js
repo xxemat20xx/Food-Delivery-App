@@ -24,7 +24,7 @@ export const createItem = (data) =>
 // UPDATE ITEM (ADMIN)
 // =========================
 export const updateItem = (id, data) =>
-  axiosInstance.put(`/update-item/${id}`, data, {
+  axiosInstance.put(`/items/update-item/${id}`, data, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -32,4 +32,5 @@ export const updateItem = (id, data) =>
 // =========================
 // DELETE ITEM (SOFT DELETE)
 // =========================
-export const deleteItem = (id) => axiosInstance.delete(`/delete-item/${id}`);
+export const deleteItem = (id) =>
+  axiosInstance.delete(`/items/delete-item/${id}`);

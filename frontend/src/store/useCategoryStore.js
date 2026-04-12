@@ -23,7 +23,7 @@ export const useCategoryStore = create((set, get) => ({
   createCategory: async (categoryData) => {
     set({ loading: true });
     try {
-      const res = await axios.post("/admin/categories", categoryData);
+      const res = await categoryApi.createCategory(categoryData);
       set((state) => ({
         categories: [...state.categories, res.data.data],
         loading: false,
