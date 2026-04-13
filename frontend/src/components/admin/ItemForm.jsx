@@ -9,10 +9,11 @@ import CategoryForm from './CategoryForm';
 
 const ItemForm = ({ onClose, item }) => {
     const isEdit = !!item;
-    const { fetchCategories, categories } = useCategoryStore();
+    const { fetchCategories, categories, deleteCategory } = useCategoryStore();
     const { fetchStores, stores } = useStoreStore();
     const { createItem, updateItem, loading } = useItemStore();
     const [ showCategoryModal, setShowCategoryModal ] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
     //Custom Category Dropdown
     const [open, setOpen] = useState(false)
@@ -150,6 +151,16 @@ const ItemForm = ({ onClose, item }) => {
         }
     };
 
+    // category
+    const handleCreate = () => {
+    setSelectedCategory(null);
+    setShowCategoryModal(true);
+    };
+    const handleEdit = (category) => {
+    setSelectedCategory(category);
+    setShowCategoryModal(true);
+    };
+
     return (
         <div className="fixed inset-0 bg-black/80 overflow-y-auto z-50 p-6">
             <form onSubmit={handleSubmit}>
@@ -224,7 +235,7 @@ const ItemForm = ({ onClose, item }) => {
                                             <div className="flex gap-2">
                                                 <button
                                                 type="button"
-                                                onClick={() => console.log("edit", cat._id)}
+                                                onClick={() => handleEdit(cat)}
                                                 className="text-blue-400 hover:text-blue-300"
                                                 >
                                                 <Pencil size={16} />
@@ -232,7 +243,7 @@ const ItemForm = ({ onClose, item }) => {
 
                                                 <button
                                                 type="button"
-                                                onClick={() => console.log("delete", cat._id)}
+                                                onClick={() => deleteCategory(cat._id)}
                                                 className="text-red-400 hover:text-red-300"
                                                 >
                                                 <Trash2 size={16} />
@@ -387,7 +398,14 @@ const ItemForm = ({ onClose, item }) => {
                 </div>
             </form>
             {showCategoryModal && (
-              <CategoryForm onClose={() => setShowCategoryModal(false)} />
+            <CategoryForm
+                mode={selectedCategory ? "edit" : "create"}
+                initialData={selectedCategory}
+                onClose={() => {
+                setShowCategoryModal(false);
+                setSelectedCategory(null); // reset after close
+                }}
+            />
             )}
         </div>
     );

@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useItemStore } from '../../store/useItemStore';
 import { useCategoryStore } from '../../store/useCategoryStore';
 import { useStoreStore } from '../../store/useStoreStore';
-import { toast } from 'react-toastify';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 
 const AdminItems = ({ onEdit, onAdd }) => {
@@ -33,10 +32,9 @@ const AdminItems = ({ onEdit, onAdd }) => {
   const handleDelete = async (id) => {
     try {
       await deleteItem(id);
-      toast.success('Item deleted successfully');
       setConfirmDelete(null);
     } catch (error) {
-      toast.error(error.message || 'Failed to delete item');
+      console.log(error)
     }
   };
 

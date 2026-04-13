@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import * as categoryApi from "../api/endpoints/categoryApi";
+import axios from "axios";
 
 export const useCategoryStore = create((set, get) => ({
   categories: [],
@@ -61,7 +62,7 @@ export const useCategoryStore = create((set, get) => ({
   deleteCategory: async (id) => {
     set({ loading: true });
     try {
-      await axios.delete(`/admin/categories/${id}`);
+      await categoryApi.deleteCategory(id);
       set((state) => ({
         categories: state.categories.filter((cat) => cat._id !== id),
         loading: false,

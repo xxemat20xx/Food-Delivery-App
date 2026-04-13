@@ -189,36 +189,36 @@ const getPublicIdFromUrl = (url) => {
 export const deleteItem = async (req, res) => {
   try {
     const item = await Items.findByIdAndDelete(req.params.id);
+
     if (!item) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Item not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Item not found",
+      });
     }
 
-    // Delete image from Cloudinary if it exists
+    // Delete image from Cloudinary
     if (item.image) {
       const publicId = getPublicIdFromUrl(item.image);
+
       if (publicId) {
         try {
           await deleteFromCloudinary(publicId);
-          console.log(`Deleted image ${publicId} from Cloudinary`);
-        } catch (cloudinaryError) {
-          console.error("Cloudinary deletion error:", cloudinaryError);
-          // Continue with soft delete even if Cloudinary fails
+        } catch (err) {
+          console.error("Cloudinary deletion error:", err);
         }
       }
     }
 
-    // item.isAvailable = false;// Soft delete the item
-
-    await item.save(); //delete to db
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Item deactivated and image removed from Cloudinary",
+      message: "Item deleted successfully",
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };

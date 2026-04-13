@@ -31,8 +31,8 @@ router.put(
 
 router.delete(
   "/delete-category/:id",
-  authorize("admin", "staff"),
   verifyToken,
+  authorize("admin", "staff"),
   deleteCategory,
 );
 

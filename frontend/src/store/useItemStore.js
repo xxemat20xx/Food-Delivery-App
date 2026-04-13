@@ -112,14 +112,13 @@ export const useItemStore = create((set, get) => ({
         items: state.items.filter((item) => item._id !== id),
         loading: false,
       }));
-
-      return { success: true };
+      toast.success("Item Deleted succesfully.");
     } catch (error) {
       const message = error.response?.data?.message || "Failed to delete item";
 
       set({ error: message, loading: false });
 
-      return { success: false, message };
+      throw new Error(message);
     }
   },
 
