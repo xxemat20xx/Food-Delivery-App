@@ -71,6 +71,11 @@ const ItemForm = ({ onClose, item }) => {
             storePrices: [...formData.storePrices, { store: '', price: '' }] 
         });
     };
+    const removeStorePrice = (index) => {
+    const updated = [...formData.storePrices];
+    updated.splice(index, 1);
+    setFormData({ ...formData, storePrices: updated });
+    };
 
     const addAllStores = () => {
         const existingStoreIds = formData.storePrices.map(sp => sp.store);
@@ -285,37 +290,79 @@ const ItemForm = ({ onClose, item }) => {
                                     className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
                                 />
                                 <div className="space-y-3">
-                                    {formData.storePrices.map((storePrice, idx) => (
-                                        <div key={idx} className="grid md:grid-cols-3 gap-3">
-                                            <select
-                                                value={storePrice.store}
-                                                onChange={(e) => handleChange('storePrices', e.target.value, idx, 'store')}
-                                                className="px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white"
-                                            >
-                                                <option value="">Select Store</option>
-                                                {stores.map(store => (
-                                                    <option key={store._id} value={store._id}>{store.name}</option>
-                                                ))}
-                                            </select>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="Price"
-                                                value={storePrice.price}
-                                                onChange={(e) => handleChange('storePrices', e.target.value, idx, 'price')}
-                                                className="px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white"
-                                            />
-                                            {idx === formData.storePrices.length - 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={addStorePrice}
-                                                    className="rounded-xl bg-gray-600 text-white hover:bg-orange-500 transition"
-                                                >
-                                                    + Add Store
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+{formData.storePrices.map((storePrice, idx) => (
+    <div
+        key={idx}
+        className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-[#1f1f1f] p-3 rounded-xl border border-gray-700"
+    >
+        {/* STORE */}
+        <div className="md:col-span-5">
+            <select
+                value={storePrice.store}
+                onChange={(e) =>
+                    handleChange("storePrices", e.target.value, idx, "store")
+                }
+                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+                <option value="">Select Store</option>
+                {stores.map((store) => (
+                    <option key={store._id} value={store._id}>
+                        {store.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+
+        {/* PRICE */}
+        <div className="md:col-span-3">
+            <input
+                type="number"
+                step="0.01"
+                placeholder="Price"
+                value={storePrice.price}
+                onChange={(e) =>
+                    handleChange("storePrices", e.target.value, idx, "price")
+                }
+                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+        </div>
+
+        {/* STATUS */}
+        <div className="md:col-span-2 flex justify-center">
+            <span
+                className={`text-xs px-3 py-1 rounded-full font-medium ${
+                    storePrice.store && storePrice.price
+                        ? "bg-[var(--color-green)]/20 text-[var(--color-green)]"
+                        : "bg-yellow-500/20 text-yellow-300"
+                }`}
+            >
+                {storePrice.store && storePrice.price ? "Ready" : "Incomplete"}
+            </span>
+        </div>
+
+        {/* DELETE */}
+        <div className="md:col-span-2 flex justify-end">
+            <button
+                type="button"
+                onClick={() => removeStorePrice(idx)}
+                className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+            >
+                <Trash2 size={18} />
+            </button>
+        </div>
+    </div>
+))}
+
+{/* ADD STORE BUTTON */}
+<div className="mt-4 flex justify-end">
+    <button
+        type="button"
+        onClick={addStorePrice}
+        className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition"
+    >
+        + Add Store
+    </button>
+</div>
                                 </div>
                             </div>
 

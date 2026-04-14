@@ -15,9 +15,9 @@ const Navbar = ({ children }) => {
   const navigate = useNavigate();
 
   const navItems = [
-    { name: "Menu", path: "/#menu" },
-    { name: "About", path: "/#about" },
-    { name: "Contact", path: "/#contact" },
+    { name: "Menu", path: "/menu" },
+    { name: "About", path: "/about" },
+    { name: "Contact", path: "/contact" },
   ];
 
   const [loginOpen, setLoginOpen] = useState(false);

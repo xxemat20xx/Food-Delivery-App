@@ -74,16 +74,8 @@ export const getItem = async (req, res) => {
 // @access  Private/Admin
 export const createItem = async (req, res) => {
   try {
-    // Log the incoming body to inspect
-    console.log("Incoming request body: ", req.body);
-    console.log("File: ", req.file); // Log the uploaded file
-
     // Parse JSON fields (since they come as strings in multipart)
     const itemData = parseJSONFields(req.body);
-
-    // Log parsed itemData to inspect
-    console.log("Parsed item data: ", itemData);
-
     const {
       name,
       description,
