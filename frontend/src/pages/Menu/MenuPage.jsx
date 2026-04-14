@@ -1,5 +1,6 @@
-import { useLocation, useNavigate  } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useItemStore } from "../../store/useItemStore";
+import { useCartStore } from "../../store/useCartStore";
 import { useEffect } from "react";
 import {
   ShoppingCart,
@@ -12,16 +13,22 @@ import {
 const MenuPage = () => {
   const { state } = useLocation();
   const { fetchItems, items, loading } = useItemStore();
+  const { addToCart } = useCartStore(); // ✅ ADDED
   const navigate = useNavigate();
 
   const store = state?.store;
 
   useEffect(() => {
     fetchItems();
-      if (!store) {
-    navigate("/stores");
-  }
+
+    if (!store) {
+      navigate("/stores");
+    }
   }, [fetchItems, store]);
+
+  const handleAddToCart = (item) => {
+    addToCart(item, 1, []); // quantity = 1, no customizations for now
+  };
 
   return (
     <div className="min-h-screen bg-[var(--color-dark)] text-white p-6">
@@ -61,7 +68,6 @@ const MenuPage = () => {
 
             {/* CONTENT */}
             <div className="p-5 space-y-3">
-
               {/* TITLE + CATEGORY */}
               <div className="flex justify-between items-start gap-2">
                 <div>
@@ -122,8 +128,11 @@ const MenuPage = () => {
                 </div>
               )}
 
-              {/* BUTTON */}
-              <button className="w-full mt-2 flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:opacity-90 text-white font-medium py-2.5 rounded-xl transition active:scale-95">
+              {/* BUTTON (NOW WORKS) */}
+              <button
+                onClick={() => handleAddToCart(item)} // ✅ FIXED
+                className="w-full mt-2 flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:opacity-90 text-white font-medium py-2.5 rounded-xl transition active:scale-95"
+              >
                 <ShoppingCart size={16} />
                 Add to Cart
               </button>

@@ -39,6 +39,7 @@ export const useCartStore = create(
             price: item.storePrices[0]?.price || item.basePrice,
             quantity,
             customizations,
+            image: item.image,
           };
           newItems = [...get().items, cartItem];
         }

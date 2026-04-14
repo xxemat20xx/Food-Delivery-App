@@ -13,6 +13,7 @@ import Homepage from './pages/Home/Homepage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import StoreFinder from './pages/Home/StoreFinder';
 import MenuPage from './pages/Menu/MenuPage';
+import CartPage from './pages/Cart/CartPage';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
@@ -65,6 +66,14 @@ const App = () => {
         element={
           <Navbar>
             <StoreFinder />
+          </Navbar>
+        }
+      />
+      <Route
+        path="/cart"
+        element={
+          <Navbar>
+            <CartPage />
           </Navbar>
         }
       />
