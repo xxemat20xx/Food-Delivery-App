@@ -14,7 +14,7 @@ export const createStore = (payload) =>
 
 // ✅ UPDATE STORE
 export const updateStore = (id, payload) =>
-  axiosInstance.put(`/admin/stores/${id}`, payload);
+  axiosInstance.put(`/stores/admin/update-store/${id}`, payload);
 
 // ✅ DELETE STORE (soft delete)
 export const deleteStore = (id) =>

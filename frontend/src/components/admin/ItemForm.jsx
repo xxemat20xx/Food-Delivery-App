@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { useCategoryStore } from "../../store/useCategoryStore";
 import { useStoreStore } from "../../store/useStoreStore";
 import { useItemStore } from '../../store/useItemStore';
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Plus, X } from "lucide-react";
 import { toast } from 'react-toastify';
-
 import CategoryForm from './CategoryForm';
 
 const ItemForm = ({ onClose, item }) => {
@@ -12,11 +11,9 @@ const ItemForm = ({ onClose, item }) => {
     const { fetchCategories, categories, deleteCategory } = useCategoryStore();
     const { fetchStores, stores } = useStoreStore();
     const { createItem, updateItem, loading } = useItemStore();
-    const [ showCategoryModal, setShowCategoryModal ] = useState(false);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
-
-    //Custom Category Dropdown
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
     
     const [formData, setFormData] = useState({
         name: '',
@@ -71,10 +68,11 @@ const ItemForm = ({ onClose, item }) => {
             storePrices: [...formData.storePrices, { store: '', price: '' }] 
         });
     };
+
     const removeStorePrice = (index) => {
-    const updated = [...formData.storePrices];
-    updated.splice(index, 1);
-    setFormData({ ...formData, storePrices: updated });
+        const updated = [...formData.storePrices];
+        updated.splice(index, 1);
+        setFormData({ ...formData, storePrices: updated });
     };
 
     const addAllStores = () => {
@@ -156,127 +154,134 @@ const ItemForm = ({ onClose, item }) => {
         }
     };
 
-    // category
-    const handleCreate = () => {
-    setSelectedCategory(null);
-    setShowCategoryModal(true);
+    // Category handlers
+    const handleCreateCategory = () => {
+        setSelectedCategory(null);
+        setShowCategoryModal(true);
     };
-    const handleEdit = (category) => {
-    setSelectedCategory(category);
-    setShowCategoryModal(true);
+
+    const handleEditCategory = (category) => {
+        setSelectedCategory(category);
+        setShowCategoryModal(true);
     };
 
     return (
-        <div className="fixed inset-0 bg-black/80 overflow-y-auto z-50 p-6">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto z-50 p-4 md:p-6">
             <form onSubmit={handleSubmit}>
                 <div className="max-w-6xl mx-auto space-y-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white">
-                            {isEdit ? 'Edit Item' : 'Create Item'}
-                        </h1>
-                        <p className="text-gray-400 text-sm mt-1">
-                            {isEdit ? 'Modify product details' : 'Add a new product to your menu'}
-                        </p>
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-amber-500/20 rounded-xl">
+                            {isEdit ? <Pencil className="h-6 w-6 text-amber-400" /> : <Plus className="h-6 w-6 text-amber-400" />}
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                                {isEdit ? 'Edit Item' : 'Create Item'}
+                            </h1>
+                            <p className="text-gray-400 text-sm mt-1">
+                                {isEdit ? 'Modify product details' : 'Add a new product to your menu'}
+                            </p>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* LEFT SIDE */}
                         <div className="lg:col-span-2 space-y-6">
                             {/* Basic Info */}
-                            <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
-                                <h2 className="text-white font-semibold mb-4">Basic Information</h2>
-                                                               <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-white font-semibold">Pricing</h2>
+                            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 p-5 hover:border-gray-700 transition">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-white font-semibold text-lg flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-amber-500 rounded-full"></span>
+                                        Basic Information
+                                    </h2>
                                     <button
                                         type="button"
-                                        onClick={() => setShowCategoryModal(true)}
-                                        className="text-sm bg-green-600 hover:bg-green-500 px-3 py-1 rounded-lg transition"
+                                        onClick={handleCreateCategory}
+                                        className="text-sm bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition"
                                     >
-                                        + Add New Category
+                                        + New Category
                                     </button>
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Product name"
-                                        value={formData.name}
-                                        onChange={(e) => handleChange('name', e.target.value)}
-                                        required
-                                        className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                    />
-                                    <div className="relative w-full">
-
-                                    {/* Trigger */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setOpen(!open)}
-                                        className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white text-left flex justify-between items-center"
-                                    >
-                                        {categories.find(c => c._id === formData.category)?.name || "Select Category"}
-                                        <MoreVertical size={18} />
-                                    </button>
-
-                                    {/* Dropdown */}
-                                    {open && (
-                                        <div className="absolute z-50 mt-2 w-full bg-[#2a2a2a] border border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-
-                                        {categories.map((cat) => (
-                                            <div
-                                            key={cat._id}
-                                            className="flex items-center justify-between px-3 py-2 hover:bg-[#3a3a3a] cursor-pointer"
-                                            >
-                                            {/* Select category */}
-                                            <span
-                                                onClick={() => {
-                                                handleChange("category", cat._id);
-                                                setOpen(false);
-                                                }}
-                                                className="flex-1 text-white"
-                                            >
-                                                {cat.name}
-                                            </span>
-
-                                            {/* Actions */}
-                                            <div className="flex gap-2">
-                                                <button
-                                                type="button"
-                                                onClick={() => handleEdit(cat)}
-                                                className="text-blue-400 hover:text-blue-300"
-                                                >
-                                                <Pencil size={16} />
-                                                </button>
-
-                                                <button
-                                                type="button"
-                                                onClick={() => deleteCategory(cat._id)}
-                                                className="text-red-400 hover:text-red-300"
-                                                >
-                                                <Trash2 size={16} />
-                                                </button>
+                                    <div>
+                                        <label className="block text-gray-300 text-sm mb-1">Product Name *</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Cappuccino"
+                                            value={formData.name}
+                                            onChange={(e) => handleChange('name', e.target.value)}
+                                            required
+                                            className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <label className="block text-gray-300 text-sm mb-1">Category *</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setOpen(!open)}
+                                            className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white text-left flex justify-between items-center focus:ring-2 focus:ring-amber-500"
+                                        >
+                                            {categories.find(c => c._id === formData.category)?.name || "Select Category"}
+                                            <MoreVertical size={18} className="text-gray-400" />
+                                        </button>
+                                        {open && (
+                                            <div className="absolute z-50 mt-2 w-full bg-gray-800 border border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                                                {categories.map((cat) => (
+                                                    <div
+                                                        key={cat._id}
+                                                        className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-700 cursor-pointer transition"
+                                                    >
+                                                        <span
+                                                            onClick={() => {
+                                                                handleChange("category", cat._id);
+                                                                setOpen(false);
+                                                            }}
+                                                            className="flex-1 text-white"
+                                                        >
+                                                            {cat.name}
+                                                        </span>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleEditCategory(cat)}
+                                                                className="text-blue-400 hover:text-blue-300 p-1"
+                                                            >
+                                                                <Pencil size={16} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => deleteCategory(cat._id)}
+                                                                className="text-red-400 hover:text-red-300 p-1"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                            </div>
-                                        ))}
-                                        </div>
-                                    )}
+                                        )}
                                     </div>
                                 </div>
                                 <textarea
                                     rows="3"
-                                    placeholder="Description..."
+                                    placeholder="Description (optional)"
                                     value={formData.description}
                                     onChange={(e) => handleChange('description', e.target.value)}
-                                    className="w-full mt-4 px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    className="w-full mt-4 px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                 />
                             </div>
 
                             {/* Pricing with Add All Stores */}
-                            <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-white font-semibold">Pricing</h2>
+                            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 p-5 hover:border-gray-700 transition">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                                    <h2 className="text-white font-semibold text-lg flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-amber-500 rounded-full"></span>
+                                        Pricing
+                                    </h2>
                                     <button
                                         type="button"
                                         onClick={addAllStores}
-                                        className="text-sm bg-green-600 hover:bg-green-500 px-3 py-1 rounded-lg transition"
+                                        className="text-sm bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition"
                                     >
                                         + Add All Stores
                                     </button>
@@ -287,111 +292,97 @@ const ItemForm = ({ onClose, item }) => {
                                     placeholder="Base Price (optional if store-specific prices provided)"
                                     value={formData.basePrice}
                                     onChange={(e) => handleChange('basePrice', e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#1f1f1f] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 mb-4"
                                 />
                                 <div className="space-y-3">
-{formData.storePrices.map((storePrice, idx) => (
-    <div
-        key={idx}
-        className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-[#1f1f1f] p-3 rounded-xl border border-gray-700"
-    >
-        {/* STORE */}
-        <div className="md:col-span-5">
-            <select
-                value={storePrice.store}
-                onChange={(e) =>
-                    handleChange("storePrices", e.target.value, idx, "store")
-                }
-                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-                <option value="">Select Store</option>
-                {stores.map((store) => (
-                    <option key={store._id} value={store._id}>
-                        {store.name}
-                    </option>
-                ))}
-            </select>
-        </div>
-
-        {/* PRICE */}
-        <div className="md:col-span-3">
-            <input
-                type="number"
-                step="0.01"
-                placeholder="Price"
-                value={storePrice.price}
-                onChange={(e) =>
-                    handleChange("storePrices", e.target.value, idx, "price")
-                }
-                className="w-full px-4 py-3 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-        </div>
-
-        {/* STATUS */}
-        <div className="md:col-span-2 flex justify-center">
-            <span
-                className={`text-xs px-3 py-1 rounded-full font-medium ${
-                    storePrice.store && storePrice.price
-                        ? "bg-[var(--color-green)]/20 text-[var(--color-green)]"
-                        : "bg-yellow-500/20 text-yellow-300"
-                }`}
-            >
-                {storePrice.store && storePrice.price ? "Ready" : "Incomplete"}
-            </span>
-        </div>
-
-        {/* DELETE */}
-        <div className="md:col-span-2 flex justify-end">
-            <button
-                type="button"
-                onClick={() => removeStorePrice(idx)}
-                className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
-            >
-                <Trash2 size={18} />
-            </button>
-        </div>
-    </div>
-))}
-
-{/* ADD STORE BUTTON */}
-<div className="mt-4 flex justify-end">
-    <button
-        type="button"
-        onClick={addStorePrice}
-        className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition"
-    >
-        + Add Store
-    </button>
-</div>
+                                    {formData.storePrices.map((storePrice, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex flex-wrap md:flex-nowrap items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700"
+                                        >
+                                            <div className="flex-1 min-w-[150px]">
+                                                <select
+                                                    value={storePrice.store}
+                                                    onChange={(e) => handleChange("storePrices", e.target.value, idx, "store")}
+                                                    className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                                >
+                                                    <option value="">Select Store</option>
+                                                    {stores.map((store) => (
+                                                        <option key={store._id} value={store._id}>{store.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="flex-1 min-w-[120px]">
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Price"
+                                                    value={storePrice.price}
+                                                    onChange={(e) => handleChange("storePrices", e.target.value, idx, "price")}
+                                                    className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                                />
+                                            </div>
+                                            <div className="w-24 text-center">
+                                                <span
+                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                                        storePrice.store && storePrice.price
+                                                            ? "bg-green-500/20 text-green-400"
+                                                            : "bg-yellow-500/20 text-yellow-400"
+                                                    }`}
+                                                >
+                                                    {storePrice.store && storePrice.price ? "Ready" : "Incomplete"}
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeStorePrice(idx)}
+                                                className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <div className="mt-4 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={addStorePrice}
+                                            className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-black transition font-medium"
+                                        >
+                                            + Add Store
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Customizations */}
-                            <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
-                                <h2 className="text-white font-semibold mb-4">Customizations</h2>
+                            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 p-5 hover:border-gray-700 transition">
+                                <h2 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
+                                    <span className="w-1 h-6 bg-amber-500 rounded-full"></span>
+                                    Customizations
+                                </h2>
                                 <div className="space-y-3">
                                     {formData.customizations.map((custom, idx) => (
-                                        <div key={idx} className="space-y-2 p-3 bg-[#1f1f1f] rounded-xl">
+                                        <div key={idx} className="space-y-2 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
                                             <input
                                                 type="text"
                                                 placeholder="Customization name (e.g., Milk type)"
                                                 value={custom.name}
                                                 onChange={(e) => handleChange('customizations', e.target.value, idx, 'name')}
-                                                className="w-full px-4 py-2 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white"
+                                                className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                                             />
                                             <input
                                                 type="text"
                                                 placeholder="Options (comma separated, e.g., Whole, Oat, Almond)"
                                                 value={custom.options}
                                                 onChange={(e) => handleChange('customizations', e.target.value, idx, 'options')}
-                                                className="w-full px-4 py-2 rounded-lg bg-[#2a2a2a] border border-gray-600 text-white"
+                                                className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                                             />
                                         </div>
                                     ))}
                                     <button
                                         type="button"
                                         onClick={addCustomization}
-                                        className="px-4 py-2 rounded-xl bg-gray-600 text-white hover:bg-orange-500 transition"
+                                        className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-amber-500 hover:text-black transition"
                                     >
                                         + Add Customization
                                     </button>
@@ -401,13 +392,20 @@ const ItemForm = ({ onClose, item }) => {
 
                         {/* RIGHT SIDE */}
                         <div className="space-y-6">
-                            <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
-                                <h2 className="text-white font-semibold mb-4">Product Image</h2>
-                                <label className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-orange-500 transition bg-[#1f1f1f]">
+                            {/* Image Upload */}
+                            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 p-5 hover:border-gray-700 transition">
+                                <h2 className="text-white font-semibold text-lg flex items-center gap-2 mb-4">
+                                    <span className="w-1 h-6 bg-amber-500 rounded-full"></span>
+                                    Product Image
+                                </h2>
+                                <label className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-amber-500 transition bg-gray-800/30">
                                     {imagePreview ? (
                                         <img src={imagePreview} alt="Preview" className="h-full object-contain rounded-xl" />
                                     ) : (
-                                        <p className="text-gray-400 text-sm">Click to upload image</p>
+                                        <div className="text-center">
+                                            <Plus className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                                            <p className="text-gray-400 text-sm">Click to upload image</p>
+                                        </div>
                                     )}
                                     <input
                                         type="file"
@@ -424,18 +422,19 @@ const ItemForm = ({ onClose, item }) => {
                                 </label>
                             </div>
 
-                            <div className="bg-[#2a2a2a] p-5 rounded-2xl border border-gray-700">
+                            {/* Actions */}
+                            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 p-5">
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-3 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-500 transition shadow-lg disabled:opacity-50"
+                                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold hover:from-amber-400 hover:to-amber-500 transition shadow-lg disabled:opacity-50"
                                 >
                                     {loading ? 'Saving...' : (isEdit ? 'Update Item' : 'Save Item')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="mt-3 w-full py-3 rounded-xl bg-gray-700 text-white font-semibold hover:bg-gray-600 transition shadow-lg"
+                                    className="mt-3 w-full py-3 rounded-xl bg-gray-800 text-white font-semibold hover:bg-gray-700 transition"
                                 >
                                     Cancel
                                 </button>
@@ -444,15 +443,17 @@ const ItemForm = ({ onClose, item }) => {
                     </div>
                 </div>
             </form>
+
+            {/* Category Modal */}
             {showCategoryModal && (
-            <CategoryForm
-                mode={selectedCategory ? "edit" : "create"}
-                initialData={selectedCategory}
-                onClose={() => {
-                setShowCategoryModal(false);
-                setSelectedCategory(null); // reset after close
-                }}
-            />
+                <CategoryForm
+                    mode={selectedCategory ? "edit" : "create"}
+                    initialData={selectedCategory}
+                    onClose={() => {
+                        setShowCategoryModal(false);
+                        setSelectedCategory(null);
+                    }}
+                />
             )}
         </div>
     );

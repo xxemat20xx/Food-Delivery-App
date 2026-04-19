@@ -9,6 +9,7 @@ import {
   Clock,
   Phone,
   ChevronRight,
+  Coffee,
 } from "lucide-react";
 
 const StoreFinder = () => {
@@ -42,11 +43,8 @@ const StoreFinder = () => {
 
   useEffect(() => {
     fetchStores();
-  }, [fetchStores]);
+  }, []);
 
-  // =========================
-  // COMPUTE DISTANCES
-  // =========================
   const computeStores = (latitude, longitude) => {
     const computed = stores.map((store) => {
       const lat = parseFloat(store.lat ?? store.location?.coordinates?.[1]);
@@ -67,46 +65,32 @@ const StoreFinder = () => {
     setLocationLoading(false);
   };
 
-  // =========================
-  // FIND LOCATION (FIXED)
-  // =========================
   const handleFind = () => {
     setLocationError(null);
 
-    // ✅ 1. ALWAYS USE SAVED LOCATION FIRST
     if (userLocation?.latitude && userLocation?.longitude) {
       computeStores(userLocation.latitude, userLocation.longitude);
       return;
     }
 
-    // ✅ 2. ASK GPS ONLY IF NOT SAVED
     setLocationLoading(true);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-
         setUserLocation({ latitude, longitude });
-
         computeStores(latitude, longitude);
       },
       (err) => {
         setLocationLoading(false);
-
         let errorMsg = "Unable to get your location.";
-        if (err.code === 1)
-          errorMsg = "Location access denied.";
-        if (err.code === 2)
-          errorMsg = "Location unavailable.";
-
+        if (err.code === 1) errorMsg = "Location access denied.";
+        if (err.code === 2) errorMsg = "Location unavailable.";
         setLocationError(errorMsg);
       }
     );
   };
 
-  // =========================
-  // AUTO COMPUTE ONCE (NO GPS)
-  // =========================
   useEffect(() => {
     if (
       hasComputed.current ||
@@ -115,7 +99,6 @@ const StoreFinder = () => {
       !stores.length
     )
       return;
-
     hasComputed.current = true;
     computeStores(userLocation.latitude, userLocation.longitude);
   }, [stores, userLocation]);
@@ -127,187 +110,188 @@ const StoreFinder = () => {
   const formatDistance = (km) => `${km.toFixed(1)} km`;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 bg-black text-white">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          Find Your Nearest Store
-        </h1>
-        <p className="mt-2 text-lg text-gray-400">
-          Discover the closest location and start ordering
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* LEFT */}
-        <div className="space-y-6">
-          <button
-            onClick={handleFind}
-            disabled={locationLoading || loading}
-            className="w-full flex items-center justify-center gap-2 bg-white text-black py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {locationLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-                <span>Locating you...</span>
-              </>
-            ) : (
-              <>
-                <Navigation className="h-5 w-5" />
-                <span>📍 Use My Location</span>
-              </>
-            )}
-          </button>
-
-          {loading && (
-            <div className="flex justify-center py-8">
-              <div className="animate-pulse text-gray-400">
-                Loading stores...
-              </div>
-            </div>
-          )}
-
-          {locationError && (
-            <div className="bg-red-900/50 border border-red-700 rounded-xl p-4 text-red-200">
-              <p className="font-medium">⚠️ {locationError}</p>
-              <button
-                onClick={handleFind}
-                className="mt-2 text-sm underline hover:text-red-100"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-
-          {results.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-white">
-                Stores near you
-              </h2>
-
-              <div className="space-y-3">
-                {results.map((store, index) => (
-                  <div
-                    key={store._id}
-                    onClick={() => setSelectedStore(store)}
-                    className={`group relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                      selectedStore?._id === store._id
-                        ? "border-orange-500 bg-gray-800 shadow-lg"
-                        : "border-gray-800 bg-gray-900 hover:border-gray-700 hover:shadow-md"
-                    }`}
-                  >
-                    {index === 0 && (
-                      <div className="absolute top-3 right-3 bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-current" />
-                        Nearest
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">
-                          {store.name}
-                        </h3>
-                        <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
-                          {store.address}
-                        </p>
-
-                        <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-500">
-                          {store.distance && (
-                            <span className="flex items-center gap-1">
-                              <Navigation className="h-4 w-4" />
-                              {formatDistance(store.distance)}
-                            </span>
-                          )}
-                          {store.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="h-4 w-4" />
-                              {store.phone}
-                            </span>
-                          )}
-                          {store.hours && store.hours[today] && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {store.hours[today].open} -{" "}
-                              {store.hours[today].close}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOrder(store);
-                        }}
-                        className="flex items-center gap-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-500 transition-colors text-sm font-medium shadow-sm"
-                      >
-                        Order
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!loading && results.length === 0 && !locationError && (
-            <div className="text-center py-12 bg-gray-900 rounded-2xl border border-gray-800">
-              <MapPin className="h-12 w-12 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-400">
-                Click the button above to find stores near you.
-              </p>
-            </div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header with gradient and icon */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center p-2 bg-amber-500/20 rounded-full mb-4">
+            <Coffee className="h-8 w-8 text-amber-400" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+            Find Your Nearest Store
+          </h1>
+          <p className="mt-3 text-gray-400 max-w-md mx-auto">
+            Discover the closest Inarawan location and start ordering
+          </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="lg:sticky lg:top-8 h-[500px] lg:h-[calc(100vh-6rem)]">
-          {selectedStore ? (
-            <div className="relative h-full rounded-2xl overflow-hidden shadow-xl border border-gray-800">
-              {(() => {
-                const lat = parseFloat(
-                  selectedStore.lat ??
-                    selectedStore.location?.coordinates?.[1]
-                );
-                const lng = parseFloat(
-                  selectedStore.lng ??
-                    selectedStore.location?.coordinates?.[0]
-                );
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            {/* Location Button with gradient */}
+            <button
+              onClick={handleFind}
+              disabled={locationLoading || loading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50"
+            >
+              {locationLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                  <span>Locating you...</span>
+                </>
+              ) : (
+                <>
+                  <Navigation className="h-5 w-5" />
+                  <span>📍 Use My Location</span>
+                </>
+              )}
+            </button>
 
-                return (
-                  <iframe
-                    title={`Map showing ${selectedStore.name}`}
-                    src={`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
-                    className="w-full h-full"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                );
-              })()}
+            {loading && (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-amber-500"></div>
+              </div>
+            )}
 
-              <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-700">
-                <p className="font-semibold text-white">
-                  {selectedStore.name}
-                </p>
-                <p className="text-sm text-gray-300 truncate">
-                  {selectedStore.address}
+            {locationError && (
+              <div className="bg-red-900/30 backdrop-blur-sm border border-red-700 rounded-xl p-4 text-red-200">
+                <p className="font-medium">⚠️ {locationError}</p>
+                <button
+                  onClick={handleFind}
+                  className="mt-2 text-sm underline hover:text-red-100"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {/* Store List */}
+            {results.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-amber-400" />
+                  Stores near you
+                </h2>
+
+                <div className="space-y-4">
+                  {results.map((store, index) => (
+                    <div
+                      key={store._id}
+                      onClick={() => setSelectedStore(store)}
+                      className={`group relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer backdrop-blur-sm ${
+                        selectedStore?._id === store._id
+                          ? "bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10"
+                          : "bg-gray-900/60 border-gray-800 hover:border-amber-500/50 hover:bg-gray-900/80"
+                      }`}
+                    >
+                      {index === 0 && (
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                          <Star className="h-3 w-3 fill-current" />
+                          Nearest
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition">
+                            {store.name}
+                          </h3>
+                          <p className="text-sm text-gray-400 mt-1 flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4" />
+                            {store.address}
+                          </p>
+
+                          <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
+                            {store.distance && (
+                              <span className="flex items-center gap-1.5 bg-gray-800/50 px-2 py-1 rounded-full">
+                                <Navigation className="h-3.5 w-3.5" />
+                                {formatDistance(store.distance)}
+                              </span>
+                            )}
+                            {store.phone && (
+                              <span className="flex items-center gap-1.5 bg-gray-800/50 px-2 py-1 rounded-full">
+                                <Phone className="h-3.5 w-3.5" />
+                                {store.phone}
+                              </span>
+                            )}
+                            {store.hours && store.hours[today] && (
+                              <span className="flex items-center gap-1.5 bg-gray-800/50 px-2 py-1 rounded-full">
+                                <Clock className="h-3.5 w-3.5" />
+                                {store.hours[today].open} -{" "}
+                                {store.hours[today].close}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOrder(store);
+                          }}
+                          className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-4 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
+                        >
+                          Order
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && results.length === 0 && !locationError && (
+              <div className="text-center py-16 bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800">
+                <MapPin className="h-14 w-14 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 font-medium">
+                  Click the button above to find stores near you.
                 </p>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full bg-gray-900 rounded-2xl border-2 border-dashed border-gray-800 text-center p-6">
-              <MapPin className="h-12 w-12 text-gray-600 mb-3" />
-              <p className="text-gray-400 font-medium">
-                No store selected
-              </p>
-              <p className="text-sm text-gray-500 mt-1">
-                Choose a store from the list to view on map
-              </p>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* RIGHT COLUMN - MAP */}
+          <div className="lg:sticky lg:top-8 h-[450px] lg:h-[calc(100vh-8rem)]">
+            {selectedStore ? (
+              <div className="relative h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+                {(() => {
+                  const lat = parseFloat(
+                    selectedStore.lat ??
+                      selectedStore.location?.coordinates?.[1]
+                  );
+                  const lng = parseFloat(
+                    selectedStore.lng ??
+                      selectedStore.location?.coordinates?.[0]
+                  );
+                  return (
+                    <iframe
+                      title={`Map showing ${selectedStore.name}`}
+                      src={`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
+                      className="w-full h-full"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  );
+                })()}
+                <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-700">
+                  <p className="font-semibold text-white">{selectedStore.name}</p>
+                  <p className="text-sm text-gray-300 truncate">
+                    {selectedStore.address}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full bg-gray-900/60 backdrop-blur-sm rounded-2xl border-2 border-dashed border-gray-700 text-center p-6">
+                <MapPin className="h-14 w-14 text-gray-600 mb-4" />
+                <p className="text-gray-400 font-medium">No store selected</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Choose a store from the list to view on map
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useItemStore } from '../../store/useItemStore';
 import { useCategoryStore } from '../../store/useCategoryStore';
 import { useStoreStore } from '../../store/useStoreStore';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, AlertCircle } from 'lucide-react';
 
 const AdminItems = ({ onEdit, onAdd }) => {
   const { items, fetchItems, deleteItem, loading } = useItemStore();
@@ -34,7 +34,7 @@ const AdminItems = ({ onEdit, onAdd }) => {
       await deleteItem(id);
       setConfirmDelete(null);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   };
 
@@ -46,27 +46,35 @@ const AdminItems = ({ onEdit, onAdd }) => {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Products</h1>
-            <p className="text-gray-400 mt-1">Manage your menu items</p>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-500/20 rounded-xl">
+              <Package className="h-6 w-6 text-amber-400" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                Products
+              </h1>
+              <p className="text-gray-400 text-sm mt-1">Manage your menu items</p>
+            </div>
           </div>
           <button
             onClick={onAdd}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg transition"
+            className="flex items-center gap-2 bg-amber-500 text-black px-5 py-2.5 rounded-xl hover:bg-amber-400 transition-all shadow-lg hover:shadow-amber-500/20"
           >
-            <Plus size={18} />
-            Add Product
+            <Plus size={18} /> Add Product
           </button>
         </div>
 
-        <div className="bg-[#2a2a2a] p-4 rounded-xl mb-6 flex flex-wrap gap-4">
+        {/* Filters */}
+        <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800 p-4 mb-8 flex flex-wrap gap-4">
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-2 text-white"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
             <option value="">All Categories</option>
             {categories.map(cat => (
@@ -76,7 +84,7 @@ const AdminItems = ({ onEdit, onAdd }) => {
           <select
             value={filterStore}
             onChange={(e) => setFilterStore(e.target.value)}
-            className="bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-2 text-white"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
             <option value="">All Stores</option>
             {stores.map(store => (
@@ -85,47 +93,58 @@ const AdminItems = ({ onEdit, onAdd }) => {
           </select>
         </div>
 
+        {/* Loading / Empty / Grid */}
         {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading products...</div>
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+          </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-12 bg-[#1f1f1f] rounded-xl">
+          <div className="text-center py-16 bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800">
+            <AlertCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
             <p className="text-gray-400">No products found for the selected filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
               <div
                 key={item._id}
-                className="bg-[#2a2a2a] rounded-xl border border-gray-700 overflow-hidden hover:border-orange-500 transition"
+                className="group bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800 overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5"
               >
-                <div className="h-48 bg-[#1f1f1f] flex items-center justify-center overflow-hidden">
+                {/* Image */}
+                <div className="h-48 bg-gray-800/50 flex items-center justify-center overflow-hidden">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                   ) : (
-                    <div className="text-gray-500 text-sm">No image</div>
+                    <div className="text-gray-500 text-sm flex flex-col items-center gap-2">
+                      <Package className="h-8 w-8" />
+                      No image
+                    </div>
                   )}
                 </div>
-                <div className="p-4">
+                {/* Content */}
+                <div className="p-5">
                   <h3 className="text-lg font-semibold text-white truncate">{item.name}</h3>
                   <p className="text-gray-400 text-sm mt-1 line-clamp-2">
                     {item.description || 'No description'}
                   </p>
                   <div className="flex justify-between items-center mt-3">
-                    <span className="text-orange-400 font-bold">{formatPrice(item)}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-amber-400 font-bold text-lg">{formatPrice(item)}</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300">
                       {item.category?.name || 'Uncategorized'}
                     </span>
                   </div>
-                  <div className="flex justify-end gap-2 mt-4">
+                  <div className="flex justify-end gap-2 mt-4 pt-2 border-t border-gray-800">
                     <button
                       onClick={() => onEdit(item)}
-                      className="p-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition"
+                      className="p-2 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-all"
+                      title="Edit"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setConfirmDelete(item._id)}
-                      className="p-2 rounded-lg bg-red-600 hover:bg-red-500 transition"
+                      className="p-2 rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition-all"
+                      title="Delete"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -137,23 +156,29 @@ const AdminItems = ({ onEdit, onAdd }) => {
         )}
       </div>
 
+      {/* Delete Confirmation Modal - Modern */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-[#2a2a2a] rounded-xl p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold text-white mb-4">Confirm Delete</h2>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-gray-800 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-500/20 rounded-full">
+                <Trash2 className="h-6 w-6 text-red-400" />
+              </div>
+              <h2 className="text-xl font-bold text-white">Confirm Delete</h2>
+            </div>
             <p className="text-gray-300 mb-6">
               Are you sure you want to delete this item? This action cannot be undone.
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition"
+                className="flex-1 px-4 py-2 rounded-xl bg-gray-800 text-white hover:bg-gray-700 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(confirmDelete)}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 transition"
+                className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-500 transition"
               >
                 Delete
               </button>

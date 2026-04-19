@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import * as storeApi from "../api/endpoints/storeApi";
+import { toast } from "react-toastify";
 
 export const useStoreStore = create(
   persist(
@@ -121,6 +122,7 @@ export const useStoreStore = create(
                   : state.selectedStore,
               loading: false,
             }));
+            toast.success("Updated successfully.");
 
             return updatedStore;
           } else {
