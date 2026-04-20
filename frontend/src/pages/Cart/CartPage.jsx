@@ -1,6 +1,7 @@
 import { useCartStore } from "../../store/useCartStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ShoppingCart,
   Trash2,
@@ -9,6 +10,7 @@ import {
   ArrowLeft,
   ShoppingBag,
 } from "lucide-react";
+import LoginModal from "../../pages/Login/Login"; // adjust path if needed
 
 const CartPage = () => {
   const {
@@ -20,11 +22,37 @@ const CartPage = () => {
     storeId,
   } = useCartStore();
 
+  const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // After login, if checkout was pending, navigate to checkout
+  useEffect(() => {
+    if (user && pendingCheckout) {
+      setPendingCheckout(false);
+      navigate("/checkout");
+    }
+  }, [user, pendingCheckout, navigate]);
+
+  const handleProceedToCheckout = () => {
+    if (!user) {
+      setShowLoginModal(true);
+      setPendingCheckout(true);
+    } else {
+      navigate("/checkout");
+    }
+  };
+
+  const handleLoginModalClose = () => {
+    setShowLoginModal(false);
+    setPendingCheckout(false); // cancel pending checkout if modal closed without login
+  };
 
   return (
     <div className="min-h-screen bg-[var(--color-dark)] text-white p-6">
@@ -156,7 +184,10 @@ const CartPage = () => {
               <span>₱{getTotal()}</span>
             </div>
 
-            <button className="w-full bg-[var(--color-primary)] py-3 rounded-xl font-medium hover:opacity-90 transition">
+            <button
+              onClick={handleProceedToCheckout}
+              className="w-full bg-[var(--color-primary)] py-3 rounded-xl font-medium hover:opacity-90 transition"
+            >
               Proceed to Checkout
             </button>
 
@@ -169,6 +200,12 @@ const CartPage = () => {
           </div>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        open={showLoginModal}
+        onClose={handleLoginModalClose}
+      />
     </div>
   );
 };

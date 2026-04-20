@@ -42,25 +42,18 @@ const MenuPage = () => {
 
   const filteredItems = useMemo(() => {
     return items?.filter((item) => {
-      const matchSearch = item.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
+      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
       const matchCategory =
-        selectedCategory === "All" ||
-        item.category?.name === selectedCategory;
-
+        selectedCategory === "All" || item.category?.name === selectedCategory;
       const matchAvailability =
         availability === "All" ||
         (availability === "Available" && item.isAvailable) ||
         (availability === "Sold out" && !item.isAvailable);
-
       return matchSearch && matchCategory && matchAvailability;
     });
   }, [items, search, selectedCategory, availability]);
 
   return (
-    // Add pt-20 to account for fixed navbar (adjust if navbar height differs)
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white pt-20 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
@@ -78,8 +71,8 @@ const MenuPage = () => {
 
         {/* LAYOUT: Sidebar + Grid */}
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* SIDEBAR (glass, compact) */}
-          <aside className="lg:w-72 w-full bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800 p-4 h-fit space-y-5 sticky top-24">
+          {/* SIDEBAR – sticky only on large screens, full width on mobile */}
+          <aside className="lg:w-72 w-full bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800 p-4 space-y-5 lg:sticky lg:top-24 h-fit">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-800">
               <Filter className="h-4 w-4 text-amber-400" />
               <h3 className="font-medium text-white text-sm">Filters</h3>
@@ -162,7 +155,6 @@ const MenuPage = () => {
                   key={item._id}
                   className="group bg-gray-900/40 rounded-xl overflow-hidden border border-gray-800 hover:border-amber-500/40 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                 >
-                  {/* IMAGE */}
                   <div className="h-44 bg-gray-800/30 flex items-center justify-center overflow-hidden">
                     {item.image ? (
                       <img
@@ -174,8 +166,6 @@ const MenuPage = () => {
                       <Coffee className="h-8 w-8 text-gray-600" />
                     )}
                   </div>
-
-                  {/* CONTENT */}
                   <div className="p-4 space-y-2">
                     <div>
                       <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition line-clamp-1">
@@ -186,16 +176,13 @@ const MenuPage = () => {
                         {item.category?.name || "Uncategorized"}
                       </div>
                     </div>
-
                     <p className="text-xs text-gray-400 line-clamp-2">
                       {item.description || "No description"}
                     </p>
-
                     <div className="flex items-center justify-between pt-1">
                       <p className="text-lg font-bold text-amber-400">
                         ₱{item.storePrices?.[0]?.price || item.basePrice}
                       </p>
-
                       <div
                         className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
                           item.isAvailable
@@ -214,7 +201,6 @@ const MenuPage = () => {
                         )}
                       </div>
                     </div>
-
                     {item.customizations?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {item.customizations[0]?.options?.slice(0, 2).map((opt, i) => (
@@ -232,7 +218,6 @@ const MenuPage = () => {
                         )}
                       </div>
                     )}
-
                     <button
                       onClick={() => handleAddToCart(item)}
                       disabled={!item.isAvailable}
