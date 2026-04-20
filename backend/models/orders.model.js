@@ -40,6 +40,11 @@ const orderSchema = new mongoose.Schema({
     enum: ["pending", "paid", "failed"],
     default: "pending",
   },
+  paymongo: {
+    checkoutSessionId: String,
+    paymentId: String,
+    referenceNumber: String,
+  },
   deliveryAddress: {
     street: String,
     city: String,
