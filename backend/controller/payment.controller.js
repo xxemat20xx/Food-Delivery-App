@@ -37,7 +37,7 @@ export const createCheckout = async (req, res) => {
           show_description: true,
           show_line_items: true,
           line_items: lineItems,
-          payment_method_types: ["card", "gcash", "grab_pay", "maya"],
+          payment_method_types: ["card", "gcash", "grab_pay", "paymaya"], // ✅ fixed
           success_url: `http://localhost:5173/payment/success?order_id=${newOrder._id}`,
           cancel_url: `http://localhost:5173/payment/cancelled?order_id=${newOrder._id}`,
           reference_number: generateReference(),
