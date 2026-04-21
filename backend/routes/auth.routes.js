@@ -21,7 +21,7 @@ import { cookieOptions } from "../utils/cookie.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 // rate limiter
-import { rateLimiter } from "../middleware/rateLimiter.js"
+import { rateLimiter } from "../middleware/rateLimiter.js";
 
 const forgotPasswordLimiter = rateLimiter({
   keyPrefix: "forgot",
@@ -57,8 +57,8 @@ const verifyLimiter = rateLimiter({
 
 const authRoutes = express.Router();
 
-authRoutes.post("/register",registerLimiter, register);
-authRoutes.post("/verify",verifyLimiter, verify);
+authRoutes.post("/register", registerLimiter, register);
+authRoutes.post("/verify", verifyLimiter, verify);
 authRoutes.post("/login", loginLimiter, loginUser);
 authRoutes.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
 
@@ -97,7 +97,7 @@ authRoutes.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.redirect("http://localhost:5173/dashboard");
+    res.redirect("http://localhost:5173/");
   },
 );
 

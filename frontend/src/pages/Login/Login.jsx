@@ -10,6 +10,7 @@ import {
   CircularProgress,
   Box,
   Fade,
+  Divider,                    // 👈 added for separator
 } from "@mui/material";
 import { Mail, Lock, X, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
@@ -30,7 +31,7 @@ const LoginModal = ({ open, onClose }) => {
 
   const { login, register, forgotPassword, verifyEmail, isLoading } = useAuthStore();
 
-  // 🔁 cooldown timer
+  // cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -54,14 +55,11 @@ const LoginModal = ({ open, onClose }) => {
 
   const validate = () => {
     let err = {};
-
     if (!email.includes("@")) err.email = "Invalid email";
     if (mode !== "forgot" && mode !== "verify" && password.length < 6)
       err.password = "Minimum 6 characters";
-
     if (mode === "verify" && otp.length < 4)
       err.otp = "Invalid OTP";
-
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -104,6 +102,12 @@ const LoginModal = ({ open, onClose }) => {
     if (!validate()) return;
     const res = await forgotPassword({ email });
     if (res) setMode("login");
+  };
+
+  // 👇 Google login handler
+  const handleGoogleLogin = () => {
+    // Redirect to your backend Google OAuth endpoint
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   const getTitle = () => {
@@ -318,6 +322,50 @@ const LoginModal = ({ open, onClose }) => {
                 >
                   {cooldown > 0 ? `Resend OTP in ${cooldown}s` : "Resend OTP"}
                 </Typography>
+              )}
+
+              {/* 👇 Google Login Button – only in login mode */}
+              {mode === "login" && (
+                <>
+                  <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }}>
+                    <Typography variant="caption" sx={{ color: "#9ca3af" }}>OR</Typography>
+                  </Divider>
+                  <Button
+                    fullWidth
+                    onClick={handleGoogleLogin}
+                    startIcon={
+                      <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path
+                          fill="#EA4335"
+                          d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3.97C17.782 2.095 15.054 1 12 1 7.392 1 3.39 3.6 1.463 7.314l3.803 2.45z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M22.486 12.205c0-.752-.069-1.505-.205-2.227H12v4.636h5.929c-.278 1.5-1.11 2.766-2.352 3.618l3.68 2.83c2.176-2.001 3.229-4.945 3.229-8.857z"
+                        />
+                        <path
+                          fill="#4A90E2"
+                          d="M5.266 14.235A7.027 7.027 0 0 1 4.909 12c0-.788.127-1.547.357-2.235L1.463 7.314A11.935 11.935 0 0 0 0 12c0 1.929.467 3.75 1.281 5.358l3.985-3.123z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M12 23c2.94 0 5.447-.99 7.435-2.673l-3.68-2.83c-1.042.686-2.374 1.09-3.755 1.09-2.668 0-4.947-1.6-5.956-3.934l-3.802 2.45C3.39 20.4 7.392 23 12 23z"
+                        />
+                      </svg>
+                    }
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#1f2937",
+                      "&:hover": { backgroundColor: "#f5f5f5" },
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: "12px",
+                      py: 1.2,
+                    }}
+                  >
+                    Continue with Google
+                  </Button>
+                </>
               )}
             </Box>
           </Fade>
