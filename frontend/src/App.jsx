@@ -14,6 +14,9 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import StoreFinder from './pages/Home/StoreFinder';
 import MenuPage from './pages/Menu/MenuPage';
 import CartPage from './pages/Cart/CartPage';
+import PaymentSuccess from "./pages/Payment/PaymentSuccess"
+import PaymentCancelled from "./pages/Payment/PaymentCancelled"
+import CheckoutPage from './pages/Checkout/CheckoutPage';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
@@ -77,6 +80,7 @@ const App = () => {
           </Navbar>
         }
       />
+      
       <Route
         path="/admin-dashboard"
         element={
@@ -85,6 +89,9 @@ const App = () => {
           </ProtectedRoutes>
         }
       />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/cancelled" element={<PaymentCancelled />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
 
    </Routes>
 
