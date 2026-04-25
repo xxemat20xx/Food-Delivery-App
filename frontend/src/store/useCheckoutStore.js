@@ -8,18 +8,6 @@ export const useCheckoutStore = create((set, get) => ({
   checkoutUrl: null,
   orderId: null,
 
-  // Mock cart data for testing
-  testCartData: {
-    items: [
-      { _id: "item1", name: "Cappuccino", quantity: 2, price: 150 },
-      { _id: "item2", name: "Croissant", quantity: 1, price: 80 },
-    ],
-    totalAmount: 380,
-    userEmail: "test@example.com",
-    userId: "USER_ID_HERE",
-    storeId: "STORE_ID_HERE",
-  },
-
   // Actions
   setTestData: (data) => set({ testCartData: data }),
 

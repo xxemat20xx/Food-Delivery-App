@@ -18,6 +18,7 @@ const Navbar = ({ children }) => {
 
   const navItems = [
     { name: "Menu", path: "/menu" },
+    { name: "Orders", path: "/orders" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
