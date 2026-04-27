@@ -104,11 +104,11 @@ const LoginModal = ({ open, onClose }) => {
     if (res) setMode("login");
   };
 
-  // 👇 Google login handler
-  const handleGoogleLogin = () => {
-    // Redirect to your backend Google OAuth endpoint
-    window.location.href = "http://localhost:5000/api/auth/google";
-  };
+// 👇 Google login handler
+const handleGoogleLogin = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  window.location.href = `${apiUrl}/auth/google`;
+};
 
   const getTitle = () => {
     if (mode === "signup") return "Create Account";
