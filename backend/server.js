@@ -64,20 +64,19 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/payments", paymentRoutes);
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://food-delivery-app-green-eight.vercel.app",
+  "http://localhost:5173", // local frontend
+  "https://food-delivery-app-green-eight.vercel.app", // Vercel frontend
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
       }
-      return callback(null, true);
     },
     credentials: true,
   }),
