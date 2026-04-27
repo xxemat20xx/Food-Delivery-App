@@ -81,7 +81,7 @@ authRoutes.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "http://localhost:5173/login",
+    failureRedirect: `${process.env.CLIENT_URL}/login`,
   }),
   (req, res) => {
     const accessToken = generateAccessToken(req.user);
@@ -97,7 +97,7 @@ authRoutes.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.redirect("http://localhost:5173/");
+    res.redirect(`${process.env.CLIENT_URL}`);
   },
 );
 

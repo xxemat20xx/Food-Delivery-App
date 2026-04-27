@@ -173,7 +173,7 @@ const MyOrders = () => {
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1 mt-1 justify-end">
                         <CreditCard size={12} />
-                        {order.paymentMethod || "Not specified"}
+                        {order.paymentMethod.toUpperCase() || "Not specified"}
                       </div>
                     </div>
                   </div>
