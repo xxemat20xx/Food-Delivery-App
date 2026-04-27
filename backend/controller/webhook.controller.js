@@ -65,6 +65,7 @@ export const handleWebhook = async (req, res) => {
     if (eventType === "payment.paid" && paymentAttributes.status === "paid") {
       const orderId = paymentAttributes.metadata?.order_id;
       const paymentId = eventData.id;
+      const sourceType = paymentAttributes.source?.type;
 
       if (!orderId) {
         console.error("No order_id in webhook metadata");
@@ -75,6 +76,7 @@ export const handleWebhook = async (req, res) => {
       if (order && order.paymentStatus !== "paid") {
         order.paymentStatus = "paid";
         order.status = "confirmed";
+        order.paymentMethod = sourceType;
         if (!order.paymongo) order.paymongo = {};
         order.paymongo.paymentId = paymentId;
         await order.save();
