@@ -137,7 +137,7 @@ const Navbar = ({ children }) => {
 
         {/* Mobile Menu */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-96 border-t border-gray-800" : "max-h-0"
+          mobileOpen ? "border-t border-gray-800" : "max-h-0"
         }`}>
           <div className="px-4 py-4 space-y-3 bg-gray-900">
             <button
