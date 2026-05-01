@@ -1,5 +1,10 @@
 import HeroImage from '../../assets/hero-img.png';
 import { Facebook, Instagram, Twitter, ArrowRight, Coffee } from "lucide-react";
+import HomepageScroll_1 from './HomepageScroll_1';
+import HomepageScroll_2 from './HomepageScroll_2';
+import HomepageScroll_3 from './HomepageScroll_3';
+import ImageGallery from './ImageGallery';
+import Footer from '../../components/Layout/Footer';
 
 const Homepage = () => {
   return (
@@ -90,6 +95,11 @@ const Homepage = () => {
           animation: float 6s ease-in-out infinite;
         }
       `}</style>
+        <HomepageScroll_1 />
+        <HomepageScroll_2 />
+        <HomepageScroll_3 />
+        <ImageGallery />
+      
     </section>
   );
 };
