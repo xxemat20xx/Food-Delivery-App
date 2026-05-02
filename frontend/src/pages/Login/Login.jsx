@@ -13,7 +13,6 @@ import {
   Divider,
 } from "@mui/material";
 import { Mail, Lock, X, Eye, EyeOff, ArrowLeft } from "lucide-react";
-
 import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
@@ -28,7 +27,6 @@ const LoginModal = ({ open, onClose }) => {
 
   const navigate = useNavigate();
 
-  // 👇 Get OAuth pending state and actions from store
   const {
     login,
     register,
@@ -39,13 +37,14 @@ const LoginModal = ({ open, onClose }) => {
     setOAuthPending,
   } = useAuthStore();
 
-  // cooldown timer
+  // Cooldown timer effect
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
       setCooldown((prev) => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cooldown]);
 
   const resetFields = () => {
@@ -56,6 +55,7 @@ const LoginModal = ({ open, onClose }) => {
   };
 
   const closeModal = () => {
+    if (isOAuthPending) return; // prevent closing while OAuth pending
     resetFields();
     setMode("login");
     onClose();
@@ -73,7 +73,7 @@ const LoginModal = ({ open, onClose }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isOAuthPending) return;
     const res = await login({ email, password });
     if (res !== undefined) {
       closeModal();
@@ -83,14 +83,14 @@ const LoginModal = ({ open, onClose }) => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isOAuthPending) return;
     const res = await register({ email, password });
     if (res) setMode("verify");
   };
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isOAuthPending) return;
     const res = await verifyEmail({ email, otp });
     if (res) {
       setMode("login");
@@ -99,14 +99,14 @@ const LoginModal = ({ open, onClose }) => {
   };
 
   const handleResendOTP = async () => {
-    if (cooldown > 0) return;
+    if (cooldown > 0 || isOAuthPending) return;
     await forgotPassword({ email });
     setCooldown(30);
   };
 
   const handleForgot = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || isOAuthPending) return;
     const res = await forgotPassword({ email });
     if (res) setMode("login");
   };
@@ -151,6 +151,9 @@ const LoginModal = ({ open, onClose }) => {
     },
   };
 
+  // Disable all interactive elements when OAuth pending
+  const disabled = isOAuthPending;
+
   return (
     <Dialog
       open={open}
@@ -180,6 +183,7 @@ const LoginModal = ({ open, onClose }) => {
             "&:hover": { color: "#f59e0b", transform: "rotate(90deg)" },
             transition: "all 0.2s",
           }}
+          disabled={disabled}
         >
           <X size={20} />
         </IconButton>
@@ -217,7 +221,7 @@ const LoginModal = ({ open, onClose }) => {
                 label="Email"
                 fullWidth
                 value={email}
-                disabled={mode === "verify"}
+                disabled={mode === "verify" || disabled}
                 onChange={(e) => setEmail(e.target.value)}
                 error={!!errors.email}
                 helperText={errors.email}
@@ -240,6 +244,7 @@ const LoginModal = ({ open, onClose }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   error={!!errors.password}
                   helperText={errors.password}
+                  disabled={disabled}
                   sx={inputStyle}
                   InputProps={{
                     startAdornment: (
@@ -253,6 +258,7 @@ const LoginModal = ({ open, onClose }) => {
                           onClick={() => setShowPass(!showPass)}
                           edge="end"
                           sx={{ color: "#9ca3af" }}
+                          disabled={disabled}
                         >
                           {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                         </IconButton>
@@ -271,6 +277,7 @@ const LoginModal = ({ open, onClose }) => {
                   error={!!errors.otp}
                   helperText={errors.otp}
                   inputProps={{ maxLength: 6 }}
+                  disabled={disabled}
                   sx={otpInputStyle}
                 />
               )}
@@ -278,7 +285,7 @@ const LoginModal = ({ open, onClose }) => {
               <Button
                 type="submit"
                 fullWidth
-                disabled={isLoading}
+                disabled={isLoading || disabled}
                 sx={{
                   mt: 1,
                   py: 1.3,
@@ -311,10 +318,10 @@ const LoginModal = ({ open, onClose }) => {
                 <Typography
                   textAlign="center"
                   sx={{
-                    color: cooldown > 0 ? "#6b7280" : "#f59e0b",
-                    cursor: cooldown > 0 ? "not-allowed" : "pointer",
+                    color: cooldown > 0 || disabled ? "#6b7280" : "#f59e0b",
+                    cursor: cooldown > 0 || disabled ? "not-allowed" : "pointer",
                     fontSize: "0.8rem",
-                    "&:hover": { textDecoration: cooldown > 0 ? "none" : "underline" },
+                    "&:hover": { textDecoration: cooldown > 0 || disabled ? "none" : "underline" },
                   }}
                   onClick={handleResendOTP}
                 >
@@ -322,6 +329,7 @@ const LoginModal = ({ open, onClose }) => {
                 </Typography>
               )}
 
+              {/* Google Login Button */}
               {mode === "login" && (
                 <>
                   <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }}>
@@ -330,9 +338,9 @@ const LoginModal = ({ open, onClose }) => {
                   <Button
                     fullWidth
                     onClick={handleGoogleLogin}
-                    disabled={isOAuthPending}
+                    disabled={disabled}
                     startIcon={
-                      isOAuthPending ? (
+                      disabled ? (
                         <CircularProgress size={18} sx={{ color: "#1f2937" }} />
                       ) : (
                         <svg width="20" height="20" viewBox="0 0 24 24">
@@ -365,20 +373,25 @@ const LoginModal = ({ open, onClose }) => {
                       py: 1.2,
                     }}
                   >
-                    {isOAuthPending ? "Redirecting..." : "Continue with Google"}
+                    {disabled ? "Redirecting..." : "Continue with Google"}
                   </Button>
                 </>
               )}
             </Box>
           </Fade>
 
-          <Box sx={{ mt: 3, textAlign: "center" }}>
+          {/* Footer Links */}
+          <Box
+            sx={{
+              mt: 3,
+              textAlign: "center",
+              opacity: disabled ? 0.5 : 1,
+              pointerEvents: disabled ? "none" : "auto",
+            }}
+          >
             {mode === "login" && (
               <>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#9ca3af", display: "inline-block" }}
-                >
+                <Typography variant="body2" sx={{ color: "#9ca3af", display: "inline-block" }}>
                   Don't have an account?{" "}
                 </Typography>
                 <Typography
