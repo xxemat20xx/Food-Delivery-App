@@ -9,16 +9,15 @@ import LoginModal from "../../pages/Login/Login";
 const Navbar = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { user, logout, isCheckingAuth } = useAuthStore();  // 👈 add isCheckingAuth
   const { items } = useCartStore();
   const navigate = useNavigate();
-
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const navItems = [
     { name: "Menu", path: "/menu" },
-    { name: "Orders", path: "/orders" },,
+    { name: "Orders", path: "/orders" },
   ];
 
   const [loginOpen, setLoginOpen] = useState(false);
@@ -37,6 +36,35 @@ const Navbar = ({ children }) => {
   };
   const handleLogin = () => {
     setLoginOpen(true);
+  };
+
+  // Skeleton loader for auth buttons
+  const AuthButton = () => {
+    if (isCheckingAuth) {
+      return <div className="w-20 h-9 bg-gray-700 rounded-lg animate-pulse"></div>;
+    }
+    if (!user) {
+      return (
+        <button
+          onClick={handleLogin}
+          className="bg-amber-500 hover:bg-amber-400 text-black px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2"
+        >
+          <LogIn size={16} />
+          Login
+        </button>
+      );
+    }
+    return (
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleLogout}
+          className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-1.5 rounded-lg transition flex items-center gap-2"
+        >
+          <LogOut size={16} />
+          Logout
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -102,25 +130,7 @@ const Navbar = ({ children }) => {
               </button>
             )}
 
-            {!user ? (
-              <button
-                onClick={handleLogin}
-                className="bg-amber-500 hover:bg-amber-400 text-black px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2"
-              >
-                <LogIn size={16} />
-                Login
-              </button>
-            ) : (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleLogout}
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-1.5 rounded-lg transition flex items-center gap-2"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
-              </div>
-            )}
+            <AuthButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -182,7 +192,9 @@ const Navbar = ({ children }) => {
               </button>
             )}
 
-            {!user ? (
+            {isCheckingAuth ? (
+              <div className="w-full h-10 bg-gray-700 rounded-lg animate-pulse"></div>
+            ) : !user ? (
               <button
                 onClick={() => {
                   setLoginOpen(true);
