@@ -21,7 +21,7 @@ https://food-delivery-app-green-eight.vercel.app/
 ### 🛠️ Admin CMS
 
 * Add, edit, and delete products
-* Manage store inventory
+* Add and manage store location
 * Upload product images via Cloudinary
 * Order monitoring *(Coming Soon)*
 * Real-time updates with Socket.io *(Planned)*
