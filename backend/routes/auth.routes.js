@@ -97,7 +97,7 @@ authRoutes.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.redirect(`${process.env.CLIENT_URL}`);
+    res.redirect(`${process.env.CLIENT_URL}?login=success`);
   },
 );
 

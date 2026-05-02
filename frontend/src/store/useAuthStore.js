@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { toast } from "react-toastify";
 import * as authApi from "../api/endpoints/authApi";
+import { useNavigate } from "react-router-dom";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -113,14 +114,15 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     try {
       await authApi.logout();
-
       set({
         user: null,
         isAuthenticated: false,
       });
-      toast.success("Logout successfull");
+      toast.success("Logout successful");
+      return true;
     } catch (error) {
       console.error(error);
+      return false;
     }
   },
 

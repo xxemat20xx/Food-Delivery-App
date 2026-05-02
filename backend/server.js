@@ -75,6 +75,11 @@ app.use("/api/settings", settingsRoutes);
 // payment routes
 app.use("/api/payments", paymentRoutes);
 
+//health
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();

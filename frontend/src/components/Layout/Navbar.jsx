@@ -31,11 +31,10 @@ const Navbar = ({ children }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const handleLogout = async () => {
+    const success = await logout();
+    if (success) navigate("/");
   };
-
   const handleLogin = () => {
     setLoginOpen(true);
   };

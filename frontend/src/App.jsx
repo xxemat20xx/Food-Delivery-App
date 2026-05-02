@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useSearchParams } from "react-router-dom";
 
 // components
 import Layout from './components/Layout/Layout';      // 👈 import the new layout
@@ -22,14 +23,20 @@ import OrderDetails from "./pages/Orders/OrderDetails";
 import { useAuthStore } from './store/useAuthStore';
 
 // toaster
-import { ToastContainer, Bounce } from 'react-toastify';
+import { ToastContainer, Bounce, toast } from 'react-toastify';
+
 
 const App = () => {
   const { checkAuth } = useAuthStore();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+     if (searchParams.get("login") === "success") {
+       toast.success("Logged in with Google successfully!");
+       window.history.replaceState({}, document.title, window.location.pathname);
+     }
     checkAuth();
-  }, [checkAuth]);
+  }, [checkAuth, searchParams]);
 
   return (
     <>
