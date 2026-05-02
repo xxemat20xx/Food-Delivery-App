@@ -56,10 +56,29 @@ export const createOrder = async (req, res) => {
 // @access  Private
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id })
-      .populate("store", "name address")
-      .sort("-createdAt");
-    res.status(200).json({ success: true, data: orders });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5; // orders per page
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      Order.find({ user: req.user.id })
+        .populate("store", "name address")
+        .sort("-createdAt")
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments({ user: req.user.id }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: orders,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });

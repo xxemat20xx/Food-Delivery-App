@@ -7,14 +7,23 @@ export const useOrderStore = create((set, get) => ({
   currentOrder: null,
   loading: false,
   error: null,
-  pagination: null,
+  pagination: {
+    page: 1,
+    limit: 5,
+    total: 0,
+    pages: 0,
+  },
 
   // Fetch all orders for the logged-in user
-  fetchMyOrders: async () => {
+  fetchMyOrders: async (page = 1, limit = 5) => {
     set({ loading: true, error: null });
     try {
-      const res = await orderApi.fetchMyOrders();
-      set({ orders: res.data.data, loading: false });
+      const res = await orderApi.fetchMyOrders(page, limit);
+      set({
+        orders: res.data.data,
+        pagination: res.data.pagination,
+        loading: false,
+      });
     } catch (error) {
       const message = error.response?.data?.message || "Failed to fetch orders";
       set({ error: message, loading: false });
