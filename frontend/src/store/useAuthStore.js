@@ -146,5 +146,29 @@ export const useAuthStore = create((set) => ({
       });
     }
   },
+
+  sOAuthPending: (() => {
+    try {
+      return sessionStorage.getItem("google_oauth_pending") === "true";
+    } catch {
+      return false;
+    }
+  })(),
+  setOAuthPending: (pending) => {
+    try {
+      if (pending) {
+        sessionStorage.setItem("google_oauth_pending", "true");
+      } else {
+        sessionStorage.removeItem("google_oauth_pending");
+      }
+    } catch {}
+    set({ isOAuthPending: pending });
+  },
+  clearOAuthPending: () => {
+    try {
+      sessionStorage.removeItem("google_oauth_pending");
+    } catch {}
+    set({ isOAuthPending: false });
+  },
   clearError: () => set({ error: null }),
 }));

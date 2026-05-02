@@ -10,7 +10,7 @@ import {
   CircularProgress,
   Box,
   Fade,
-  Divider,                    // 👈 added for separator
+  Divider,
 } from "@mui/material";
 import { Mail, Lock, X, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
@@ -18,18 +18,26 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
 const LoginModal = ({ open, onClose }) => {
-  const [mode, setMode] = useState("login"); // login | signup | forgot | verify
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
-
   const [showPass, setShowPass] = useState(false);
   const [errors, setErrors] = useState({});
   const [cooldown, setCooldown] = useState(0);
 
   const navigate = useNavigate();
 
-  const { login, register, forgotPassword, verifyEmail, isLoading } = useAuthStore();
+  // 👇 Get OAuth pending state and actions from store
+  const {
+    login,
+    register,
+    forgotPassword,
+    verifyEmail,
+    isLoading,
+    isOAuthPending,
+    setOAuthPending,
+  } = useAuthStore();
 
   // cooldown timer
   useEffect(() => {
@@ -58,8 +66,7 @@ const LoginModal = ({ open, onClose }) => {
     if (!email.includes("@")) err.email = "Invalid email";
     if (mode !== "forgot" && mode !== "verify" && password.length < 6)
       err.password = "Minimum 6 characters";
-    if (mode === "verify" && otp.length < 4)
-      err.otp = "Invalid OTP";
+    if (mode === "verify" && otp.length < 4) err.otp = "Invalid OTP";
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -104,11 +111,11 @@ const LoginModal = ({ open, onClose }) => {
     if (res) setMode("login");
   };
 
-// 👇 Google login handler
-const handleGoogleLogin = () => {
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  window.location.href = `${apiUrl}/auth/google`;
-};
+  const handleGoogleLogin = () => {
+    setOAuthPending(true);
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    window.location.href = `${apiUrl}/auth/google`;
+  };
 
   const getTitle = () => {
     if (mode === "signup") return "Create Account";
@@ -117,7 +124,6 @@ const handleGoogleLogin = () => {
     return "Welcome Back";
   };
 
-  // Custom styling for TextField to match glass/amber theme
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
       color: "#e5e7eb",
@@ -136,7 +142,6 @@ const handleGoogleLogin = () => {
     "& .MuiFormHelperText-root": { marginLeft: 0, fontSize: "0.7rem" },
   };
 
-  // OTP specific style (centered, large tracking)
   const otpInputStyle = {
     ...inputStyle,
     "& .MuiOutlinedInput-input": {
@@ -164,7 +169,6 @@ const handleGoogleLogin = () => {
       }}
     >
       <DialogContent sx={{ p: 0, position: "relative" }}>
-        {/* Close button */}
         <IconButton
           onClick={closeModal}
           sx={{
@@ -181,7 +185,6 @@ const handleGoogleLogin = () => {
         </IconButton>
 
         <Box sx={{ p: 4 }}>
-          {/* Title */}
           <Typography
             variant="h5"
             textAlign="center"
@@ -210,7 +213,6 @@ const handleGoogleLogin = () => {
               }
               sx={{ display: "flex", flexDirection: "column", gap: 2 }}
             >
-              {/* Email */}
               <TextField
                 label="Email"
                 fullWidth
@@ -229,7 +231,6 @@ const handleGoogleLogin = () => {
                 }}
               />
 
-              {/* Password */}
               {(mode === "login" || mode === "signup") && (
                 <TextField
                   label="Password"
@@ -261,7 +262,6 @@ const handleGoogleLogin = () => {
                 />
               )}
 
-              {/* OTP */}
               {mode === "verify" && (
                 <TextField
                   label="Enter OTP"
@@ -275,7 +275,6 @@ const handleGoogleLogin = () => {
                 />
               )}
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 fullWidth
@@ -308,7 +307,6 @@ const handleGoogleLogin = () => {
                 )}
               </Button>
 
-              {/* Resend OTP */}
               {mode === "verify" && (
                 <Typography
                   textAlign="center"
@@ -324,7 +322,6 @@ const handleGoogleLogin = () => {
                 </Typography>
               )}
 
-              {/* 👇 Google Login Button – only in login mode */}
               {mode === "login" && (
                 <>
                   <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }}>
@@ -333,25 +330,30 @@ const handleGoogleLogin = () => {
                   <Button
                     fullWidth
                     onClick={handleGoogleLogin}
+                    disabled={isOAuthPending}
                     startIcon={
-                      <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path
-                          fill="#EA4335"
-                          d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3.97C17.782 2.095 15.054 1 12 1 7.392 1 3.39 3.6 1.463 7.314l3.803 2.45z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M22.486 12.205c0-.752-.069-1.505-.205-2.227H12v4.636h5.929c-.278 1.5-1.11 2.766-2.352 3.618l3.68 2.83c2.176-2.001 3.229-4.945 3.229-8.857z"
-                        />
-                        <path
-                          fill="#4A90E2"
-                          d="M5.266 14.235A7.027 7.027 0 0 1 4.909 12c0-.788.127-1.547.357-2.235L1.463 7.314A11.935 11.935 0 0 0 0 12c0 1.929.467 3.75 1.281 5.358l3.985-3.123z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M12 23c2.94 0 5.447-.99 7.435-2.673l-3.68-2.83c-1.042.686-2.374 1.09-3.755 1.09-2.668 0-4.947-1.6-5.956-3.934l-3.802 2.45C3.39 20.4 7.392 23 12 23z"
-                        />
-                      </svg>
+                      isOAuthPending ? (
+                        <CircularProgress size={18} sx={{ color: "#1f2937" }} />
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                          <path
+                            fill="#EA4335"
+                            d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3.97C17.782 2.095 15.054 1 12 1 7.392 1 3.39 3.6 1.463 7.314l3.803 2.45z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M22.486 12.205c0-.752-.069-1.505-.205-2.227H12v4.636h5.929c-.278 1.5-1.11 2.766-2.352 3.618l3.68 2.83c2.176-2.001 3.229-4.945 3.229-8.857z"
+                          />
+                          <path
+                            fill="#4A90E2"
+                            d="M5.266 14.235A7.027 7.027 0 0 1 4.909 12c0-.788.127-1.547.357-2.235L1.463 7.314A11.935 11.935 0 0 0 0 12c0 1.929.467 3.75 1.281 5.358l3.985-3.123z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M12 23c2.94 0 5.447-.99 7.435-2.673l-3.68-2.83c-1.042.686-2.374 1.09-3.755 1.09-2.668 0-4.947-1.6-5.956-3.934l-3.802 2.45C3.39 20.4 7.392 23 12 23z"
+                          />
+                        </svg>
+                      )
                     }
                     sx={{
                       backgroundColor: "#fff",
@@ -363,14 +365,13 @@ const handleGoogleLogin = () => {
                       py: 1.2,
                     }}
                   >
-                    Continue with Google
+                    {isOAuthPending ? "Redirecting..." : "Continue with Google"}
                   </Button>
                 </>
               )}
             </Box>
           </Fade>
 
-          {/* Footer Links */}
           <Box sx={{ mt: 3, textAlign: "center" }}>
             {mode === "login" && (
               <>
