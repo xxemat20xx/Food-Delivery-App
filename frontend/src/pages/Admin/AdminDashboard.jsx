@@ -13,6 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import OrderMonitoringDashboard from "./OrderMonitoringDashboard";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("stores");
@@ -25,13 +26,7 @@ const AdminDashboard = () => {
         return <StoreDashboard />;
       case "orders":
         return (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <div className="text-center">
-              <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-              <p className="text-xl">Orders Dashboard</p>
-              <p className="text-sm mt-2">Coming soon...</p>
-            </div>
-          </div>
+          <OrderMonitoringDashboard />
         );
       case "products":
         return <ItemsDashboard />;

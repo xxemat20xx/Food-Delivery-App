@@ -9,7 +9,7 @@ import LoginModal from "../../pages/Login/Login";
 const Navbar = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, logout, isCheckingAuth } = useAuthStore();  // 👈 add isCheckingAuth
+  const { user, logout, isCheckingAuth } = useAuthStore(); 
   const { items } = useCartStore();
   const navigate = useNavigate();
 

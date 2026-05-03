@@ -6,6 +6,7 @@ import {
   getOrder,
   getAllOrders,
   updateOrderStatus,
+  cancelPendingOrder,
 } from "../controller/order.controller.js";
 
 import { verifyToken, authorize } from "../middleware/auth.middleware.js";
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get("/get-my-order", verifyToken, getMyOrders);
 router.get("/get-order/:id", verifyToken, getOrder);
 router.post("/create-order", verifyToken, createOrder);
+router.delete("/cancel-pending/:orderId", verifyToken, cancelPendingOrder);
 
 router.get(
   "/get-all-order",

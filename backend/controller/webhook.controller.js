@@ -74,12 +74,21 @@ export const handleWebhook = async (req, res) => {
 
       const order = await Order.findById(orderId);
       if (order && order.paymentStatus !== "paid") {
+        const previousStatus = order.status;
         order.paymentStatus = "paid";
         order.status = "confirmed";
         order.paymentMethod = sourceType;
+
         if (!order.paymongo) order.paymongo = {};
         order.paymongo.paymentId = paymentId;
         await order.save();
+
+        // ✅ Emit real‑time update
+        const notifyOrderUpdate = req.app.get("notifyOrderUpdate");
+        if (notifyOrderUpdate) {
+          notifyOrderUpdate(order, previousStatus);
+        }
+
         console.log(`✅ Order ${order._id} marked as paid via webhook.`);
       } else {
         console.log(`Order ${orderId} not found or already paid.`);

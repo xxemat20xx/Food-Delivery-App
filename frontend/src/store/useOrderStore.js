@@ -9,7 +9,7 @@ export const useOrderStore = create((set, get) => ({
   error: null,
   pagination: {
     page: 1,
-    limit: 5,
+    limit: 20,
     total: 0,
     pages: 0,
   },
@@ -43,20 +43,67 @@ export const useOrderStore = create((set, get) => ({
       throw error;
     }
   },
+  fetchAllOrders: async (page = 1, limit = 20, sort = "-createdAt") => {
+    set({ loading: true, error: null });
+    try {
+      const res = await orderApi.fetchAllOrders(page, limit, sort);
+      set({
+        orders: res.data.data,
+        pagination: res.data.pagination,
+        loading: false,
+      });
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to fetch orders";
+      set({ error: message, loading: false });
+    }
+  },
+  updateOrderOptimistically: (updatedOrder) =>
+    set((state) => ({
+      orders: state.orders.map((order) =>
+        order._id === updatedOrder.orderId
+          ? {
+              ...order,
+              status: updatedOrder.status,
+              paymentStatus: updatedOrder.paymentStatus,
+            }
+          : order,
+      ),
+    })),
+  updateOrderStatus: async (orderId, newStatus) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await orderApi.updateOrderStatus(orderId, newStatus);
+      // Optimistically update local order
+      set((state) => ({
+        orders: state.orders.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order,
+        ),
+        loading: false,
+      }));
+      return res.data;
+    } catch (error) {
+      const message =
+        error.response?.data?.message || "Failed to update status";
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+  cancelPendingOrder: async (orderId) => {
+    set({ loading: true, error: null });
+    try {
+      await orderApi.cancelPendingOrder(orderId);
+      set({ loading: false });
 
-  // Create a new order (used during checkout)
-  //   createOrder: async (orderData) => {
-  //     set({ loading: true, error: null });
-  //     try {
-  //       const res = await orderApi.createOrder(orderData);
-  //       set({ loading: false });
-  //       return res.data.data;
-  //     } catch (error) {
-  //       const message = error.response?.data?.message || "Failed to create order";
-  //       set({ error: message, loading: false });
-  //       throw error;
-  //     }
-  //   },
+      set((state) => ({
+        orders: state.orders.filter((order) => order._id !== orderId),
+      }));
+      return true;
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to cancel order";
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
 
   // Clear current order (after viewing)
   clearCurrentOrder: () => set({ currentOrder: null }),

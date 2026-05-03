@@ -18,6 +18,7 @@ import PaymentCancelled from "./pages/Payment/PaymentCancelled";
 import CheckoutPage from './pages/Checkout/CheckoutPage';
 import MyOrders from './pages/Orders/MyOrders';
 import OrderDetails from "./pages/Orders/OrderDetails";
+import OrderMonitoringDashboard from './pages/Admin/OrderMonitoringDashboard';
 
 // store
 import { useAuthStore } from './store/useAuthStore';
@@ -94,6 +95,14 @@ const App = () => {
               <AdminDashboard />
             </ProtectedRoutes>
           }
+        />
+        <Route
+        path="/admin/orders"
+        element={
+          <ProtectedRoutes>
+            <OrderMonitoringDashboard />
+          </ProtectedRoutes>
+        }
         />
 
         {/* Minimal pages – no navbar, no footer */}

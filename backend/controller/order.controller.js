@@ -101,7 +101,8 @@ export const getOrder = async (req, res) => {
     // Check if the user is the owner or an admin
     if (
       order.user._id.toString() !== req.user.id &&
-      req.user.role !== "admin"
+      req.user.role !== "admin" &&
+      req.user.role !== "staff"
     ) {
       return res
         .status(403)
@@ -155,12 +156,11 @@ export const updateOrderStatus = async (req, res) => {
       "pending",
       "confirmed",
       "preparing",
-      "out_for_delivery",
+      "ready",
       "delivered",
       "cancelled",
     ];
 
-    // ✅ Validate status value
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -169,8 +169,6 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findById(req.params.id);
-
-    // ✅ Check if order exists
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -178,7 +176,6 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // ✅ Optional: Prevent updating finalized orders
     if (order.status === "delivered" || order.status === "cancelled") {
       return res.status(400).json({
         success: false,
@@ -186,34 +183,38 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // ✅ Optional: Enforce status flow
     const statusFlow = {
       pending: ["confirmed", "cancelled"],
       confirmed: ["preparing", "cancelled"],
-      preparing: ["out_for_delivery", "cancelled"],
-      out_for_delivery: ["delivered"],
+      preparing: ["ready", "cancelled"],
+      ready: ["delivered", "cancelled"],
       delivered: [],
       cancelled: [],
     };
 
     const allowedNextStatuses = statusFlow[order.status];
-
     if (!allowedNextStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
         message: `Invalid status transition from '${order.status}' to '${status}'`,
       });
     }
+    // ✅ Capture previous status before updating
+    const previousStatus = order.status;
 
-    // ✅ Update status
     order.status = status;
 
-    // ✅ Optional: auto-update paymentStatus
     if (status === "delivered") {
       order.paymentStatus = "paid";
     }
 
     await order.save();
+
+    // ✅ Emit real‑time update
+    const notifyOrderUpdate = req.app.get("notifyOrderUpdate");
+    if (notifyOrderUpdate) {
+      notifyOrderUpdate(order, previousStatus);
+    }
 
     res.status(200).json({
       success: true,
@@ -222,10 +223,44 @@ export const updateOrderStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Order Status Error:", error);
-
     res.status(500).json({
       success: false,
       message: "Server error",
     });
+  }
+};
+// @desc    Cancel a pending order (user cancels payment)
+// @route   DELETE /api/order/cancel-pending/:orderId
+// @access  Private (only the order owner)
+export const cancelPendingOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    // Only allow cancellation if order belongs to the user and is still pending
+    if (order.user.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    if (order.status !== "pending" || order.paymentStatus !== "pending") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Order cannot be cancelled" });
+    }
+
+    await Order.findByIdAndDelete(orderId); // or soft delete: set status to "cancelled"
+
+    res.json({ success: true, message: "Order cancelled successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

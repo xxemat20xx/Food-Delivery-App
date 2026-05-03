@@ -22,6 +22,12 @@ export const createCheckout = async (req, res) => {
     });
     await newOrder.save();
 
+    // ✅ Emit real‑time update for new order (pending)
+    const notifyOrderUpdate = req.app.get("notifyOrderUpdate");
+    if (notifyOrderUpdate) {
+      notifyOrderUpdate(newOrder, null);
+    }
+
     // 2. Build PayMongo payload
     const lineItems = items.map((item) => ({
       name: item.name,

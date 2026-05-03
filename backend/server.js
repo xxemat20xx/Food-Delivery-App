@@ -1,4 +1,6 @@
 import express from "express";
+import http from "http";
+import { initializeSocket } from "./socket.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -31,8 +33,11 @@ import passport from "passport";
 import "./config/passport.js";
 
 const app = express();
+const server = http.createServer(app);
 
-const PORT = process.env.PORT || 5000;
+// init socket.io
+const { io, notifyOrderUpdate } = initializeSocket(server);
+app.set("notifyOrderUpdate", notifyOrderUpdate); // make helper available in controllers
 
 // cors
 const allowedOrigins = [
@@ -53,10 +58,6 @@ app.use(
     credentials: true,
   }),
 );
-
-//increase body size limit
-// app.use(express.json({ limit: "50mb" }));
-// app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use("/api/webhooks", webhookRoutes);
 
@@ -80,7 +81,8 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();
 });
