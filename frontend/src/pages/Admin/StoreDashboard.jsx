@@ -137,6 +137,34 @@ const StoreDashboard = () => {
     });
   };
 
+  // Helper functions to simplify hour entry
+  const setMultipleDays = (days, open, close) => {
+    const updatedHours = { ...form.hours };
+    days.forEach(day => {
+      updatedHours[day] = { open, close };
+    });
+    setForm({ ...form, hours: updatedHours });
+  };
+
+  const copyHours = (fromDay, toDay) => {
+    setForm({
+      ...form,
+      hours: {
+        ...form.hours,
+        [toDay]: { ...form.hours[fromDay] },
+      },
+    });
+  };
+
+  const clearAllHours = () => {
+    const empty = { open: "", close: "" };
+    const cleared = {
+      monday: empty, tuesday: empty, wednesday: empty, thursday: empty,
+      friday: empty, saturday: empty, sunday: empty,
+    };
+    setForm({ ...form, hours: cleared });
+  };
+
   const formatHoursForPreview = (hours) => {
     if (!hours) return [];
     const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -156,7 +184,7 @@ const StoreDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header with glass effect */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-500/20 rounded-xl">
@@ -180,7 +208,7 @@ const StoreDashboard = () => {
           </button>
         </div>
 
-        {/* Search with icon */}
+        {/* Search */}
         <div className="relative mb-8">
           <input
             type="text"
@@ -284,7 +312,7 @@ const StoreDashboard = () => {
         )}
       </div>
 
-      {/* Edit/Create Modal - Improved responsiveness */}
+      {/* Edit/Create Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
           <div className="bg-gray-900 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-800">
@@ -396,11 +424,66 @@ const StoreDashboard = () => {
                 </div>
               </div>
 
-              {/* Operating Hours Section - Modern & clean */}
+              {/* Operating Hours Section with helper buttons */}
               <div className="space-y-4">
-                <h3 className="text-white font-semibold border-l-4 border-amber-500 pl-3 flex items-center gap-2">
-                  <Clock className="h-5 w-5" /> Operating Hours
-                </h3>
+                <div className="flex flex-wrap justify-between items-center">
+                  <h3 className="text-white font-semibold border-l-4 border-amber-500 pl-3 flex items-center gap-2">
+                    <Clock className="h-5 w-5" /> Operating Hours
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const open = prompt("Enter opening time (HH:MM)", "08:00");
+                        const close = prompt("Enter closing time (HH:MM)", "20:00");
+                        if (open && close) {
+                          setMultipleDays(["monday","tuesday","wednesday","thursday","friday"], open, close);
+                        }
+                      }}
+                      className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-black transition"
+                    >
+                      Set Weekdays
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const open = prompt("Enter opening time (HH:MM)", "09:00");
+                        const close = prompt("Enter closing time (HH:MM)", "18:00");
+                        if (open && close) {
+                          setMultipleDays(["saturday","sunday"], open, close);
+                        }
+                      }}
+                      className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-black transition"
+                    >
+                      Set Weekend
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm("Set all days to the same hours?")) {
+                          const open = prompt("Opening time", "08:00");
+                          const close = prompt("Closing time", "20:00");
+                          if (open && close) {
+                            setMultipleDays(
+                              ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"],
+                              open, close
+                            );
+                          }
+                        }
+                      }}
+                      className="text-xs px-2 py-1 rounded bg-gray-600/50 text-gray-300 hover:bg-gray-500 transition"
+                    >
+                      Set All Days
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllHours}
+                      className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 gap-3">
                   {[
                     { key: "monday", label: "Monday" },
@@ -428,6 +511,15 @@ const StoreDashboard = () => {
                           className="flex-1 px-3 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-amber-500"
                         />
                       </div>
+                      {day.key !== "monday" && (
+                        <button
+                          type="button"
+                          onClick={() => copyHours("monday", day.key)}
+                          className="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white transition"
+                        >
+                          Copy from Monday
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
