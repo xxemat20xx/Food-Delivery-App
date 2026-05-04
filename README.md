@@ -76,16 +76,6 @@ https://food-delivery-app-green-eight.vercel.app/
 
 > ⚠️ Note: Backend may sleep on free tier (initial request delay possible)
 
----
-
-## 📌 Roadmap
-
-* [ ] Order tracking system
-* [ ] Real-time order monitoring (Socket.io)
-* [ ] Admin analytics dashboard
-* [ ] User order history
-* [ ] Push notifications
-
 
 
 ## 👨‍💻 Author
