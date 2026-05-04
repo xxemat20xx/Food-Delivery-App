@@ -1,4 +1,4 @@
-import Logo from "../../assets/inarawan-logo.png";
+import Logo from "../../assets/logo2.png";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
@@ -10,9 +10,9 @@ const Footer = () => {
           {/* Brand column */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={Logo} alt="Inarawan Coffee" className="h-10 w-auto" />
+              <img src={Logo} alt="Brew Ha Ha Coffee" className="h-10 w-auto" />
               <span className="text-xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
-                Inarawan Coffee
+                Brew Ha Ha Coffee
               </span>
             </div>
             <p className="text-gray-400 text-sm">
@@ -59,12 +59,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/about" className="text-gray-400 hover:text-amber-400 transition text-sm">
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition text-sm">
                   About Us
                 </a>
               </li>
               <li>
-                <a href="/contact" className="text-gray-400 hover:text-amber-400 transition text-sm">
+                <a href="#" className="text-gray-400 hover:text-amber-400 transition text-sm">
                   Contact
                 </a>
               </li>
@@ -90,7 +90,7 @@ const Footer = () => {
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-amber-400" />
                 <a href="mailto:info@inarawan.com" className="text-gray-400 hover:text-amber-400 transition text-sm">
-                  info@inarawan.com
+                  info@brewhaha.com
                 </a>
               </li>
             </ul>
@@ -114,7 +114,7 @@ const Footer = () => {
 
         {/* Divider */}
         <div className="border-t border-gray-800 pt-6 mt-6 text-center text-gray-500 text-xs">
-          &copy; {new Date().getFullYear()} Inarawan Coffee. All rights reserved.
+          &copy; {new Date().getFullYear()} Brew Ha Ha Coffee. All rights reserved.
         </div>
       </div>
     </footer>

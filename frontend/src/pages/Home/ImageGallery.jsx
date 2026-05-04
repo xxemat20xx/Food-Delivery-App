@@ -1,9 +1,9 @@
 import ImageGal1 from "../../assets/img-gal1.jpg";
 import ImageGal2 from "../../assets/img-gal2.jpg";
 import ImageGal3 from "../../assets/img-gal3.jpg";
-import ImageGal4 from "../../assets/img-gal4.jpg";
+import ImageGal4 from "../../assets/img-gal4.png";
 import ImageGal5 from "../../assets/img-gal5.jpg";
-import ImageGal6 from "../../assets/inarawan-pic.jpg";
+
 
 const ImageGallery = () => {
   return (
@@ -14,7 +14,7 @@ const ImageGallery = () => {
           <h2 className="text-4xl md:text-5xl font-bold tracking-wide text-white">
             THE <span className="text-amber-500">YORKER</span>
           </h2>
-          <p className="text-amber-500 text-sm tracking-[0.2em] mt-1">INARAWAN</p>
+          <p className="text-amber-500 text-sm tracking-[0.2em] mt-1">Brew Ha Ha</p>
         </div>
 
         {/* Gallery grid – matches CSS layout: 2fr / 1fr, five images */}
@@ -30,7 +30,7 @@ const ImageGallery = () => {
             </div>
             <div className="overflow-hidden rounded-2xl group h-80">
               <img
-                src={ImageGal3}
+                src={ImageGal5}
                 alt="Gallery"
                 className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
               />
@@ -59,7 +59,7 @@ const ImageGallery = () => {
         {/* Full‑width bottom image (spans both columns) */}
         <div className="mt-6 overflow-hidden rounded-2xl group h-80">
           <img
-            src={ImageGal6}
+            src={ImageGal3}
             alt="Gallery"
             className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
           />

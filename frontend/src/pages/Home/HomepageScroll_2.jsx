@@ -6,8 +6,8 @@ const HomepageScroll_2 = () => {
   const pastries = [
     {
       id: 1,
-      name: "Buttery Croissant",
-      description: "Flaky, golden, and melt‑in‑your‑mouth.",
+      name: "Creamy Tomato Fettuccinet",
+      description: "Classic Creamy Tomato Fettuccine: A simple version that elevates jarred marinara with cream and garlic, available at Brew Ha Ha",
       image: PastaImage1,
     },
     {
@@ -40,7 +40,7 @@ const HomepageScroll_2 = () => {
           </div>
           <p className="text-gray-400 max-w-2xl mx-auto mt-4 text-sm md:text-base">
             Freshly baked pastries at{" "}
-            <span className="text-amber-400 font-medium">Inarawan Coffee!</span>{" "}
+            <span className="text-amber-400 font-medium">Brew Ha Ha Coffee!</span>{" "}
             From buttery croissants and flaky danishes to rich muffins and
             sweet tarts, each treat is made from scratch with high‑quality
             ingredients.

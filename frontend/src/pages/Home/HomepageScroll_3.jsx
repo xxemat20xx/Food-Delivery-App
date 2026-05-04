@@ -4,17 +4,19 @@ import coffeCateg3 from "../../assets/3.png";
 import coffeCateg4 from "../../assets/4.png";
 import coffeCateg5 from "../../assets/5.png";
 import coffeCateg6 from "../../assets/6.png";
+import { useNavigate } from "react-router-dom";
 
 const products = [
-  { img: coffeCateg1, name: "Caramel Latte", desc: "Enjoy a balanced cup with a hint of sweetness and a velvety finish." },
-  { img: coffeCateg2, name: "Mocha", desc: "Rich chocolate and espresso with creamy foam." },
-  { img: coffeCateg3, name: "Vanilla Latte", desc: "Classic latte with sweet vanilla syrup." },
-  { img: coffeCateg4, name: "Cappuccino", desc: "Perfect balance of espresso, steamed milk, and foam." },
-  { img: coffeCateg5, name: "Americano", desc: "Bold espresso diluted with hot water." },
-  { img: coffeCateg6, name: "Espresso", desc: "Pure, intense coffee shot with crema." },
+  { img: coffeCateg1, name: "Lorem Ipsum", desc: "Enjoy a balanced cup with a hint of sweetness and a velvety finish." },
+  { img: coffeCateg2, name: "Lorem Ipsum", desc: "Rich chocolate and espresso with creamy foam." },
+  { img: coffeCateg3, name: "Lorem Ipsum", desc: "Classic latte with sweet vanilla syrup." },
+  { img: coffeCateg4, name: "Lorem Ipsum", desc: "Perfect balance of espresso, steamed milk, and foam." },
+  { img: coffeCateg5, name: "Lorem Ipsum", desc: "Bold espresso diluted with hot water." },
+  { img: coffeCateg6, name: "Lorem Ipsum", desc: "Pure, intense coffee shot with crema." },
 ];
 
 const HomepageScroll_3 = () => {
+  const navigate = useNavigate();
   return (
     <section className="bg-gradient-to-br from-black via-gray-900 to-black text-white py-16 px-6 md:px-12">
       {/* Header */}
@@ -26,7 +28,7 @@ const HomepageScroll_3 = () => {
 
         <p className="text-gray-400 mt-4 max-w-xl text-sm">
           Experience the rich, bold flavors of our delicious coffee at{" "}
-          <span className="text-amber-400">Inarawan Coffee!</span>
+          <span className="text-amber-400">Brew Ha Ha Coffee!</span>
         </p>
       </div>
 
@@ -45,11 +47,12 @@ const HomepageScroll_3 = () => {
             />
 
             {/* Content */}
+             <p className="font-semibold text-base text-white mb-2">{item.name}</p>
             <p className="text-sm text-gray-300 mb-6">{item.desc}</p>
 
-            <p className="font-semibold text-base text-white mb-2">{item.name}</p>
-
-            <button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium px-4 py-2 rounded-full text-sm shadow-md hover:shadow-lg hover:from-amber-400 hover:to-amber-500 transition-all duration-200">
+            <button 
+            onClick={() => navigate("/menu")}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium px-4 py-2 rounded-full text-sm shadow-md hover:shadow-lg hover:from-amber-400 hover:to-amber-500 transition-all duration-200">
               Order now →
             </button>
           </div>

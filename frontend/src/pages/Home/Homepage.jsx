@@ -1,12 +1,14 @@
 import HeroImage from '../../assets/hero-img.png';
-import { Facebook, Instagram, Twitter, ArrowRight, Coffee } from "lucide-react";
+import { Facebook, Instagram, Twitter, ArrowRight, Coffee, LocateIcon } from "lucide-react";
 import HomepageScroll_1 from './HomepageScroll_1';
 import HomepageScroll_2 from './HomepageScroll_2';
 import HomepageScroll_3 from './HomepageScroll_3';
 import ImageGallery from './ImageGallery';
-import Footer from '../../components/Layout/Footer';
+import { useNavigate } from 'react-router-dom';
 
 const Homepage = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
       {/* Animated background blobs */}
@@ -23,7 +25,7 @@ const Homepage = () => {
               <div className="relative animate-float">
                 <img
                   src={HeroImage}
-                  alt="Inarawan Coffee"
+                  alt="Brew Ha Ha Coffee"
                   className="w-full max-w-md lg:max-w-lg h-auto object-contain drop-shadow-2xl"
                 />
               </div>
@@ -40,14 +42,14 @@ const Homepage = () => {
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight">
               <span className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
-                Inarawan
+                Brew Ha Ha
               </span>
               <br />
               <span className="text-white">Coffee</span>
             </h1>
             
             <p className="text-base sm:text-lg text-gray-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Founded in 2020, Inarawan Coffee emerged from a passion for exceptional
+              Founded in 2020, Brew Ha Ha Coffee emerged from a passion for exceptional
               coffee and a commitment to community. Our journey began in a small,
               cozy café where we sourced beans from local farms, ensuring that each
               cup is not only delicious but also ethically produced.
@@ -55,18 +57,22 @@ const Homepage = () => {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 sm:px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-105 active:scale-95">
+              <button 
+              onClick={() => navigate("/menu")}
+              className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-black px-6 sm:px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-105 active:scale-95">
                 Order Now
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="inline-flex items-center justify-center gap-2 border border-amber-500/50 text-amber-400 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-amber-500/10 transition-all duration-300">
-                View Menu
+              <button 
+              onClick={() => navigate("/stores")}
+              className="inline-flex items-center justify-center gap-2 border border-amber-500/50 text-amber-400 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-amber-500/10 transition-all duration-300">
+                <LocateIcon/> Near Store
               </button>
             </div>
             
             {/* Handle & Social */}
             <div className="pt-4 space-y-4">
-              <span className="text-gray-500 text-sm tracking-wider block">@InarawanCoffee</span>
+              <span className="text-gray-500 text-sm tracking-wider block">@BrewHaHa</span>
               <div className="flex gap-6 justify-center lg:justify-start">
                 <a href="#" className="text-gray-400 hover:text-amber-400 transition-all duration-300 hover:scale-110">
                   <Facebook className="h-5 w-5" />

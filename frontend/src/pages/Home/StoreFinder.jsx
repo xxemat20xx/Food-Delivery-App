@@ -149,7 +149,7 @@ const StoreFinder = () => {
   const formatDistance = (km) => `${km.toFixed(1)} km`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header with gradient and icon */}
         <div className="text-center mb-12">
